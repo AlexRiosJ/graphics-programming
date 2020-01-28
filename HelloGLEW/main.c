@@ -28,14 +28,12 @@ void specialKeyPressed(int key, int x, int y) {
 static void initTriangle() {
 	glBindVertexArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 1);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(trianglePos), trianglePos,
-			GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(trianglePos), trianglePos, GL_STATIC_DRAW);
 	glVertexPointer(3, GL_FLOAT, 0, 0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 2);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleColor), triangleColor,
-			GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleColor), triangleColor, GL_STATIC_DRAW);
 	glColorPointer(3, GL_FLOAT, 0, 0);
 	glEnableClientState(GL_COLOR_ARRAY);
 }
