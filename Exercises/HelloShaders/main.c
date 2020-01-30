@@ -12,8 +12,8 @@ void keyPressed(unsigned char key, int x, int y) {
 GLuint programId;
 
 void init() {
-	GLuint vshId = compileShader("Shaders/position.vsh", GL_VERTEX_SHADER);
-	GLuint fshId = compileShader("Shaders/orange.fsh", GL_FRAGMENT_SHADER);
+	GLuint vshId = compileShader("./Shaders/position.vsh", GL_VERTEX_SHADER);
+	GLuint fshId = compileShader("./Shaders/orange.fsh", GL_FRAGMENT_SHADER);
 	programId = glCreateProgram();
 	glAttachShader(programId, vshId);
 	glAttachShader(programId, fshId);
