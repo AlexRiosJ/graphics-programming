@@ -27,7 +27,7 @@ void specialKeyPressed(int key, int x, int y) {
 	}
 }
 
-static void initTriangle() {
+static void initPlot() {
 	initPoints();
 	glBindVertexArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 1);
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
 	glewInit();
 
-	initTriangle();
+	initPlot();
 
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 

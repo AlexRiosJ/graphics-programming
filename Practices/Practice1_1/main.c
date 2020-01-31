@@ -28,7 +28,7 @@ void specialKeyPressed(int key, int x, int y) {
 	}
 }
 
-static void initTriangle() {
+static void initShape() {
 	glBindVertexArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 1);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(trianglePosAndColor), trianglePosAndColor, GL_STATIC_DRAW);
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 
 	glewInit();
 
-	initTriangle();
+	initShape();
 
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 
