@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "../../Utils/utils.h"
+#include "utils.h"
 
 void keyPressed(unsigned char key, int x, int y) {
 	if (key == 27) {
