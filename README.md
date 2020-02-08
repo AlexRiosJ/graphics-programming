@@ -1,7 +1,7 @@
 # Graphics Programming
 Repo for Graphics Programming college course where OpenGL is going to be taken as the main topic.
 
-This just works on **Windows**, you will need to 
+This just works on **Windows**.
 
 To compile and run, copy and paste the Makefile in the project root.
 It will be needed to have the **make** command. To do this on Windows and MinGW is installed type this command:
