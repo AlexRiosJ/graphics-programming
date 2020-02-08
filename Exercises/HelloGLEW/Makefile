@@ -37,6 +37,7 @@ clean:
 	if exist $(ODIR)\*.o del /f $(ODIR)\*.o
 	if exist $(BDIR)\*.exe del /f $(BDIR)\*.exe
 
+# If code changes you must make again and then make run.
 run:
 	if not exist $(BDIR)/$(MAIN).exe make
 	$(BDIR)/$(MAIN)
