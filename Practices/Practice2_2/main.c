@@ -13,7 +13,7 @@ void keyPressed(unsigned char key, int x, int y) {
 GLuint programId;
 
 void init() {
-	GLuint fshId = compileShader("./Shaders/color.fsh", GL_FRAGMENT_SHADER);
+	GLuint fshId = compileShader("./shaders/color.fsh", GL_FRAGMENT_SHADER);
 	programId = glCreateProgram();
 	glAttachShader(programId, fshId);
 	glLinkProgram(programId);

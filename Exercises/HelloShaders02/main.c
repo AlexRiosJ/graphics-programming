@@ -13,8 +13,8 @@ GLuint programId;
 GLuint vertexArrayId;
 
 void init() {
-	GLuint vshId = compileShader("./Shaders/colorPosition.vsh", GL_VERTEX_SHADER);
-	GLuint fshId = compileShader("./Shaders/color.fsh", GL_FRAGMENT_SHADER);
+	GLuint vshId = compileShader("./shaders/colorPosition.vsh", GL_VERTEX_SHADER);
+	GLuint fshId = compileShader("./shaders/color.fsh", GL_FRAGMENT_SHADER);
 	programId = glCreateProgram();
 	glAttachShader(programId, vshId);
 	glAttachShader(programId, fshId);

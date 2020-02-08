@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 	glutInitWindowPosition(wx, wy);
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
-	glutCreateWindow("Practice 1.2");
+	glutCreateWindow("Practice 2.1");
 
 	glutKeyboardFunc(keyPressed);
 	glutSpecialFunc(specialKeyPressed);

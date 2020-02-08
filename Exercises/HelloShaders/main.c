@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "utils.h"
+#include "../../Utils/utils.h"
 
 void keyPressed(unsigned char key, int x, int y) {
 	if (key == 27) {
@@ -12,8 +12,8 @@ void keyPressed(unsigned char key, int x, int y) {
 GLuint programId;
 
 void init() {
-	GLuint vshId = compileShader("./Shaders/position.vsh", GL_VERTEX_SHADER);
-	GLuint fshId = compileShader("./Shaders/orange.fsh", GL_FRAGMENT_SHADER);
+	GLuint vshId = compileShader("./shaders/position.vsh", GL_VERTEX_SHADER);
+	GLuint fshId = compileShader("./shaders/orange.fsh", GL_FRAGMENT_SHADER);
 	programId = glCreateProgram();
 	glAttachShader(programId, vshId);
 	glAttachShader(programId, fshId);
