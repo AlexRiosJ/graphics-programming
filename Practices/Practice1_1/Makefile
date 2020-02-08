@@ -28,7 +28,6 @@ $(ODIR)/%.o: %.c $(DEPS)
 
 $(MAIN): $(OBJ) $(UOBJ)
 	if not exist $(BDIR) mkdir $(BDIR)
-	if exist $(ODIR)\del del /f $(ODIR)\del
 	if not exist $(BDIR)/*.dll copy $(DLLDIR) $(BDIR)
 	gcc -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
 
