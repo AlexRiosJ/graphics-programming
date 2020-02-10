@@ -4,9 +4,9 @@ in vec4 gl_FragCoord;
 out vec4 pixelColor;
 
 void main() {
-    float red = (gl_FragCoord.x - (256 * floor(gl_FragCoord.x / 256))) / 256;
-    float blue = (gl_FragCoord.y - (256 * floor(gl_FragCoord.y / 256))) / 256;
-    float temp = gl_FragCoord.x * gl_FragCoord.y - gl_FragCoord.x;
-    float green = (temp - (256 * floor(temp / 256))) / 256;
+    float red = float(int(gl_FragCoord.x) % 256) / 255;
+    float blue = float(int(gl_FragCoord.y) % 256) / 255;
+    float temp = gl_FragCoord.x * gl_FragCoord.y;
+    float green = float(int(temp) % 256) / 255;
     pixelColor = vec4(red, green, blue, 1.0);
 }
