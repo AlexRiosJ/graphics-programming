@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 	int y = (glutGet(GLUT_SCREEN_HEIGHT) - h) / 2;
 	glutInitWindowSize(w, h);
 	glutInitWindowPosition(x, y);
-	glutCreateWindow("Working With Shaders 2");
+	glutCreateWindow("Uniform Variables");
 	glutKeyboardFunc(keyPressed);
 	glutDisplayFunc(draw);
 
