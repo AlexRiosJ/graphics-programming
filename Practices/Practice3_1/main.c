@@ -10,31 +10,26 @@
 GLuint programId;
 GLuint vertexArrayId;
 GLuint bufferId[2];
-GLuint color1Loc;
-GLuint color2Loc;
+GLuint colorLoc;
+GLuint colorSwapLoc;
 
 float color1R = 0.5, color1G = 0.2, color1B = 0.4;
 float color2R = 0.9, color2G = 0.8, color2B = 0.3;
-int color1 = 1;
 
 void keyPressed(unsigned char key, int x, int y) {
 	if (key == 27) {
 		exit(0);
 	} else if (key == 13) {
-		GLuint temp = color1Loc;
-		color1Loc = color2Loc;
-		color2Loc = temp;
-		glUniform4f(color1Loc, color1R, color1G, color1B, 1.0);
-		glUniform4f(color2Loc, color2R, color2G, color2B, 1.0);
+		GLuint temp = colorLoc;
+		colorLoc = colorSwapLoc;
+		colorSwapLoc = temp;
 	}
 }
 
-void genereteHexagonPoints(float r, float array[], float z) {
-	for(int i = 0; i < 6 * 3; i += 3) {
-		array[i] = r * cos(((i - 3) / 3) * M_PI / 3);
-		array[i + 1] = r * sin(((i - 3) / 3) * M_PI / 3);
-		array[i + 2] = z;
-		// printf("%.2f, %.2f, %.2f\n", array[i], array[i + 1], array[i + 2]);
+void genereteHexagonPoints(float r, float array[]) {
+	for(int i = 0; i < 6 * 2; i += 2) {
+		array[i] = r * cos(((i - 2) / 2) * M_PI / 3);
+		array[i + 1] = r * sin(((i - 2) / 2) * M_PI / 3);
 	}
 }
 
@@ -48,34 +43,37 @@ void init() {
 	glBindVertexArray(vertexArrayId);
 	glGenBuffers(2, bufferId);
 
-	float innerHex[6 * 3];
-	float outerHex[6 * 3];
+	float innerHex[6 * 2];
+	float outerHex[6 * 2];
 
-	genereteHexagonPoints(0.5, innerHex, 0);
-	genereteHexagonPoints(0.8, outerHex, -0.5);
+	genereteHexagonPoints(0.5, innerHex);
+	genereteHexagonPoints(0.8, outerHex);
 	
 	glBindVertexArray(bufferId[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, bufferId[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(innerHex), innerHex, GL_STATIC_DRAW);
-	glVertexPointer(3, GL_FLOAT, 0, 0);
+	glVertexPointer(2, GL_FLOAT, 0, 0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
 	glBindVertexArray(bufferId[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, bufferId[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(outerHex), outerHex, GL_STATIC_DRAW);
-	glVertexPointer(3, GL_FLOAT, 0, 0);
+	glVertexPointer(2, GL_FLOAT, 0, 0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	color1Loc = glGetUniformLocation(programId, "color1");
-	color2Loc = glGetUniformLocation(programId, "color2");
+	colorLoc = glGetUniformLocation(programId, "color");
 }
 
 void draw() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(programId);
-	glBindVertexArray(bufferId[0]);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 	glBindVertexArray(bufferId[1]);
+	glUniform4f(colorLoc, color1R, color1G, color1B, 1.0);
+	glUniform4f(colorSwapLoc, color2R, color2G, color2B, 1.0);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+	glBindVertexArray(bufferId[0]);
+	glUniform4f(colorSwapLoc, color1R, color1G, color1B, 1.0);
+	glUniform4f(colorLoc, color2R, color2G, color2B, 1.0);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 	glutSwapBuffers();
 }
