@@ -25,9 +25,6 @@ void keyPressed(unsigned char key, int x, int y) {
 		colorLoc = colorSwapLoc;
 		colorSwapLoc = temp;
 	}
-	printf("%c", key);
-	y = glutGet(GLUT_WINDOW_HEIGHT) - y;
-	glUniform2i(mouseLoc, x, y);
 }
 
 void mouseClicked(int button, int state, int x, int y) {
