@@ -1,15 +1,40 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "Utils.h"
+#include "utils.h"
 
 #define RESET 0xFF
 
+static Triangle triangles[] = {
+    {-1.0, 1.0, 0.0},
+    {-1.0, 0.5, 0.0},
+    {0.3, 1.0, 0.0},
+    {0.3, 0.5, 0.0},
+    {1.0, 1.0, 0.0},
+    {1.0, 0.5, 0.0},
+    {-1.0, 0.5, 0.0},
+    {-1.0, 0.0, 0.0},
+    {0.3, 0.5, 0.0},
+    {0.3, 0.0, 0.0},
+    {1.0, 0.5, 0.0},
+    {1.0, 0.0, 0.0},
+    {-1.0, 0.0, 0.0},
+    {-1.0, -0.5, 0.0},
+    {0.3, 0.0, 0.0},
+    {0.3, -0.5, 0.0},
+    {1.0, 0.0, 0.0},
+    {1.0, -0.5, 0.0},
+    {-1.0, -0.5, 0.0},
+    {-1.0, -1.0, 0.0},
+    {0.3, -0.5, 0.0},
+    {0.3, -1.0, 0.0},
+    {1.0, -0.5, 0.0},
+    {1.0, -1.0, 0.0}};
+
 static GLushort indexBuffer[] = {
-     0,  1,  2,  3,  4,  5, RESET,
-     6,  7,  8,  9, 10, 11, RESET,
+    0, 1, 2, 3, 4, 5, RESET,
+    6, 7, 8, 9, 10, 11, RESET,
     12, 13, 14, 15, 16, 17, RESET,
-    18, 19, 20, 21, 22, 23
-};
+    18, 19, 20, 21, 22, 23};
 
 static float vertexPos[] = {-1.0, 1.0, -1.0, 0.5,
                             0.3, 1.0, 0.3, 0.5,
@@ -72,20 +97,9 @@ static void createStrip()
     glBindVertexArray(va[0]);
     glGenBuffers(3, bufferId);
 
-    glBindBuffer(GL_ARRAY_BUFFER, bufferId[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPos), vertexPos, GL_STATIC_DRAW);
-    glVertexAttribPointer(vertexPosLoc, 2, GL_FLOAT, 0, 0, 0);
-    glEnableVertexAttribArray(vertexPosLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, bufferId[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCol), vertexCol, GL_STATIC_DRAW);
-    glVertexAttribPointer(vertexColLoc, 3, GL_FLOAT, 0, 0, 0);
-    glEnableVertexAttribArray(vertexColLoc);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferId[2]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexBuffer), indexBuffer, GL_STATIC_DRAW);
-    glPrimitiveRestartIndex(RESET);
-    glEnable(GL_PRIMITIVE_RESTART);
+    processArrayBuffer(bufferId[0], triangles, sizeof(triangles), vertexPosLoc, 3, GL_FLOAT);
+    processArrayBuffer(bufferId[1], vertexCol, sizeof(vertexCol), vertexColLoc, 3, GL_FLOAT);
+    processIndexBuffer(bufferId[2], indexBuffer, sizeof(indexBuffer), RESET);
 }
 
 static void drawStrip()

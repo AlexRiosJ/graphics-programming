@@ -73,3 +73,18 @@ bool loadBMP(const char* filename, unsigned char **pdata, unsigned int *width, u
     return true;
 }
 
+void processArrayBuffer(GLuint bufferId, void* array, int arraySize, GLuint loc, int size, int type)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+    glBufferData(GL_ARRAY_BUFFER, arraySize, array, GL_STATIC_DRAW);
+	glVertexAttribPointer(loc, size, type, 0, 0, 0);
+	glEnableVertexAttribArray(loc);
+}
+
+void processIndexBuffer(GLuint bufferId, void* array, int arraySize, int restartIndex)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+    glBufferData(GL_ARRAY_BUFFER, arraySize, array, GL_STATIC_DRAW);
+	glPrimitiveRestartIndex(restartIndex);
+	glEnable(GL_PRIMITIVE_RESTART);
+}
