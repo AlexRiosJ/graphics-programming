@@ -13,4 +13,10 @@ void rotateZ(Mat4 *, float);
 
 void scale(Mat4 *, float, float, float);
 
+void translateVertex(Vertex *, float, float, float);
+
+void rotateZVertex(Vertex *, float);
+
+void escalateVertex(Vertex *, float, float, float);
+
 #endif /* TRANSFORMS_H_ */

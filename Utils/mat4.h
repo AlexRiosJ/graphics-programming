@@ -9,7 +9,9 @@ typedef union {
 
 void mIdentity(Mat4 *);
 
-void mMult(Mat4 *, Mat4);
+void mZero(Mat4 *);
+
+void mMult(Mat4, Mat4 *);
 
 void mPrint(Mat4);
 
