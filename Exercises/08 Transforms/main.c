@@ -37,10 +37,7 @@ static void init()
     glBindVertexArray(vertexArrayId);
 
     glGenBuffers(1, &bufferId);
-    glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STATIC_DRAW);
-    glVertexAttribPointer(vertexPosLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(vertexPosLoc);
+    processArrayBuffer(bufferId, pos, sizeof pos, vertexPosLoc, 2, GL_FLOAT);
 }
 
 static void display()
@@ -52,37 +49,63 @@ static void display()
 
     mIdentity(&csMatrix);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
-    glUniform3f(squareColorLoc, 1, 0.5, 0);
+    glUniform3f(squareColorLoc, 0.8, 0.6, 0.2);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    translate(&csMatrix, 0.7, 0.0, 0.0);
+    static float angle1 = 0, angle2 = 0, angle3 = 0;
+    rotateZ(&csMatrix, angle1);
+    translate(&csMatrix, 0.6, 0.0, 0.0);
+    rotateZ(&csMatrix, angle2);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
-    glUniform3f(squareColorLoc, 1, 0, 0.2);
+    glUniform3f(squareColorLoc, 0.5, 0.1, 0.6);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    translate(&csMatrix, 0.0, 0.7, 0.0);
-    scale(&csMatrix, 0.5, 0.5, 1);
+    translate(&csMatrix, 0.0, 0.6, 0.0);
+    rotateZ(&csMatrix, -angle3);
+    scale(&csMatrix, 0.5, 0.5, 1.0);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
-    glUniform3f(squareColorLoc, 1, 0, 0);
+    glUniform3f(squareColorLoc, 1.0, 0.0, 0.0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    angle1 += 0.8;
+    angle2 += 2.0;
+    angle3 += 20.0;
+
+    static float angle = -45;
+
+    mIdentity(&csMatrix);
+    translate(&csMatrix, -0.6, 0.0, 0.0);
+    rotateZ(&csMatrix, -angle);
+    glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
+    glUniform3f(squareColorLoc, 1.0, 0.5, 0.8);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     mIdentity(&csMatrix);
-    translate(&csMatrix, -0.7, 0, 0);
-    rotateZ(&csMatrix, 45);
+    translate(&csMatrix, 0.0, 0.6, 0.0);
+    rotateZ(&csMatrix, angle);
+    scale(&csMatrix, 1.2, 0.7, 1.0);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
-    glUniform3f(squareColorLoc, 1, 0.7, 0.8);
+    glUniform3f(squareColorLoc, 0.9, 1.0, 0.4);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     mIdentity(&csMatrix);
-    translate(&csMatrix, 0, 0.5, 0);
-
-    glUniform3f(squareColorLoc, 1, 1, 0);
+    translate(&csMatrix, 0.0, -0.6, 0.0);
+    scale(&csMatrix, 1.2, 0.7, 1.0);
+    rotateZ(&csMatrix, angle);
+    glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
+    glUniform3f(squareColorLoc, 0.2, 0.8, 1.0);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    glUniform3f(squareColorLoc, 0, 0, 1);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    angle += 0.5;
+    if (angle >= 360.0)
+        angle -= 360.0;
 
     glutSwapBuffers();
+}
+
+static void timerFunc(int id)
+{
+    glutPostRedisplay();
+    glutTimerFunc(10, timerFunc, 1);
 }
 
 static void exitFunc(unsigned char key, int x, int y)
@@ -104,6 +127,7 @@ int main(int argc, char **argv)
     glutCreateWindow("Transforms");
     glutDisplayFunc(display);
     glutKeyboardFunc(exitFunc);
+    glutTimerFunc(10, timerFunc, 1);
     glewInit();
     glClearColor(0.5, 0.5, 0.5, 1.0);
     initShaders();
