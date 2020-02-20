@@ -12,7 +12,7 @@ void translate(Mat4 *csMatrix, float tx, float ty, float tz)
     trMatrix.at[1][3] = ty;
     trMatrix.at[2][3] = tz;
     mMult(csMatrix, trMatrix);
-    mPrint(*csMatrix);
+    // mPrint(*csMatrix);
 }
 
 void rotateX(Mat4 *m, float degrees)
@@ -34,7 +34,7 @@ void rotateZ(Mat4 *csMatrix, float degrees)
     rotMatrix.at[1][1] = cos(radians);
 
     mMult(csMatrix, rotMatrix);
-    mPrint(*csMatrix);
+    // mPrint(*csMatrix);
 }
 
 void scale(Mat4 *csMatrix, float sx, float sy, float sz)
@@ -46,5 +46,5 @@ void scale(Mat4 *csMatrix, float sx, float sy, float sz)
     scMatrix.at[2][2] = sz;
 
     mMult(csMatrix, scMatrix);
-    mPrint(*csMatrix);
+    // mPrint(*csMatrix);
 }
