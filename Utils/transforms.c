@@ -1,8 +1,20 @@
 #include "transforms.h"
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #ifndef M_PI
-    #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
+
+struct strNode
+{
+    struct strNode *below;
+    Mat4 *data;
+};
+
+typedef struct strNode *Node;
+
+Node top = NULL;
 
 void translate(Mat4 *csMatrix, float tx, float ty, float tz)
 {
@@ -47,4 +59,50 @@ void scale(Mat4 *csMatrix, float sx, float sy, float sz)
 
     mMult(csMatrix, scMatrix);
     // mPrint(*csMatrix);
+}
+
+void emptyStack()
+{
+    Node current = top;
+    while (current != NULL)
+    {
+        Node tmp = current->below;
+        free(current->data);
+        free(current);
+        current = tmp;
+    }
+    top = NULL;
+}
+
+void loadIdentity(Mat4 *csMatrix)
+{
+    mIdentity(csMatrix);
+    emptyStack();
+}
+
+void pushMatrix(Mat4 *csMatrix)
+{
+    Node node = (Node)malloc(sizeof(struct strNode));
+    Mat4 *m = (Mat4 *)malloc(sizeof(Mat4));
+    for (int i = 0; i < 16; i++)
+    {
+        m->values[i] = csMatrix->values[i];
+    }
+    node->data = m;
+    node->below = top;
+    top = node;
+}
+
+void popMatrix(Mat4 *csMatrix)
+{
+    if (top == NULL)
+        return;
+    for (int i = 0; i < 16; i++)
+    {
+        csMatrix->values[i] = top->data->values[i];
+    }
+    Node toPop = top;
+    top = top->below;
+    free(toPop->data);
+    free(toPop);
 }
