@@ -1,7 +1,14 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "utils.h"
+
 #include "transforms.h"
+#include <math.h>
+#include "utils.h"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#define POINTS 50
 
 GLuint squareColorLoc;
 GLuint vertexPosLoc;
@@ -29,9 +36,19 @@ static void initShaders()
     csMatrixLoc = glGetUniformLocation(programId, "csMatrix");
 }
 
+void genereteHexagonPoints(float r, float array[])
+{
+    for (int i = 0; i < POINTS * 2; i += 2)
+    {
+        array[i] = r * cos(((i - 2) / 2) * M_PI / POINTS * 2);
+        array[i + 1] = r * sin(((i - 2) / 2) * M_PI / POINTS * 2);
+    }
+}
+
 static void init()
 {
-    float pos[] = {-0.2, 0.2, -0.2, -0.2, 0.2, 0.2, 0.2, -0.2};
+    float pos[POINTS * 2];
+    genereteHexagonPoints(0.2, pos);
     GLuint vertexArrayId;
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
@@ -51,7 +68,7 @@ static void display()
     rotateZ(&csMatrix, sunAngle);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
     glUniform3f(squareColorLoc, 1.0, 0.8, 0.0);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS);
     sunAngle -= 0.5;
     pushMatrix(&csMatrix);
 
@@ -61,7 +78,7 @@ static void display()
     scale(&csMatrix, 0.5, 0.5, 1);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
     glUniform3f(squareColorLoc, 0.4, 0.8, 1.0);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS);
     earthAngle += 2.5;
 
     rotateZ(&csMatrix, moonAngle);
@@ -69,7 +86,7 @@ static void display()
     scale(&csMatrix, 0.3, 0.3, 1);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
     glUniform3f(squareColorLoc, 0.4, 0.4, 0.4);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS);
     moonAngle += 0.5;
 
     popMatrix(&csMatrix);
@@ -80,7 +97,7 @@ static void display()
     scale(&csMatrix, 0.3, 0.3, 1);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
     glUniform3f(squareColorLoc, 0.8, 0.4, 0.4);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS);
     marsAngle += 1.5;
     pushMatrix(&csMatrix);
 
@@ -89,7 +106,7 @@ static void display()
     scale(&csMatrix, 0.2, 0.2, 1);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
     glUniform3f(squareColorLoc, 0.4, 0.4, 0.4);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS);
     moonAngle += 0.5;
     popMatrix(&csMatrix);
 
@@ -98,7 +115,7 @@ static void display()
     scale(&csMatrix, 0.3, 0.3, 1);
     glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMatrix.values);
     glUniform3f(squareColorLoc, 0.4, 0.4, 0.4);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, POINTS);
     moonAngle += 0.5;
 
     glutSwapBuffers();
