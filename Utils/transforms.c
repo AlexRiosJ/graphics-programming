@@ -27,12 +27,32 @@ void translate(Mat4 *csMatrix, float tx, float ty, float tz)
     // mPrint(*csMatrix);
 }
 
-void rotateX(Mat4 *m, float degrees)
+void rotateX(Mat4 *csMatrix, float degrees)
 {
+    Mat4 rotMatrix;
+    mIdentity(&rotMatrix);
+    float radians = degrees * M_PI / 180;
+    rotMatrix.at[1][1] = cos(radians);
+    rotMatrix.at[1][2] = -sin(radians);
+    rotMatrix.at[2][1] = sin(radians);
+    rotMatrix.at[2][2] = cos(radians);
+
+    mMult(csMatrix, rotMatrix);
+    // mPrint(*csMatrix);
 }
 
-void rotateY(Mat4 *m, float degrees)
+void rotateY(Mat4 *csMatrix, float degrees)
 {
+    Mat4 rotMatrix;
+    mIdentity(&rotMatrix);
+    float radians = degrees * M_PI / 180;
+    rotMatrix.at[0][0] = cos(radians);
+    rotMatrix.at[0][2] = sin(radians);
+    rotMatrix.at[2][0] = -sin(radians);
+    rotMatrix.at[2][2] = cos(radians);
+
+    mMult(csMatrix, rotMatrix);
+    // mPrint(*csMatrix);
 }
 
 void rotateZ(Mat4 *csMatrix, float degrees)
@@ -105,4 +125,16 @@ void popMatrix(Mat4 *csMatrix)
     top = top->below;
     free(toPop->data);
     free(toPop);
+}
+
+void setOrtho(Mat4 *m, float left, float right, float bottom, float top, float far, float near)
+{
+    mIdentity(m);
+    m->at[0][0] = 2 / (right - left);
+    m->at[1][1] = 2 / (top - bottom);
+    m->at[2][2] = 2 / (near - far);
+
+    m->at[0][3] = -(right + left) / (right - left);
+    m->at[1][3] = -(top + bottom) / (top - bottom);
+    m->at[2][3] = -(near + far) / (near - far);
 }

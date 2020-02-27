@@ -11,5 +11,6 @@ void scale(Mat4 *, float, float, float);
 void loadIdentity(Mat4 *);
 void pushMatrix(Mat4 *);
 void popMatrix(Mat4 *);
+void setOrtho(Mat4 *, float, float, float, float, float, float);
 
 #endif /* TRANSFORMS_H_ */
