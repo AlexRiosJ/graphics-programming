@@ -2,13 +2,14 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <math.h>
+#include <time.h>
 #include "utils.h"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-#define SIDES_N 50
-#define LAYERS_N 9
+#define SIDES_N 5
+#define LAYERS_N 4
 
 #define RESET 0xFF
 
@@ -29,85 +30,86 @@ void keyPressed(unsigned char key, int x, int y)
 
 void generatePoints(float width, float array[], float color[])
 {
-	int sideCount = 0;
 	float angle = M_PI / 4;
 	float radius = 1;
-	float r, g, b;
-	r = rand() / (RAND_MAX * 1.0);
-	g = rand() / (RAND_MAX * 1.0);
-	for (int i = 0, j = 0; i < nPoints * 2; i += 2, j += 3)
+
+	srand(time(NULL));
+	float r = rand() / (RAND_MAX * 1.0);
+	float g = rand() / (RAND_MAX * 1.0);
+	float b = rand() / (RAND_MAX * 1.0);
+
+	for (int i = 0; i < LAYERS_N; i++)
 	{
-		array[i] = cos(angle) * radius;
-		array[i + 1] = sin(angle) * radius;
-		angle += (3 * M_PI / 2) / SIDES_N;
-		sideCount++;
-		b = rand() / (RAND_MAX * 1.0);
-		if (sideCount > SIDES_N)
+		for (int j = 0; j < SIDES_N + 1; j++)
 		{
-			r = rand() / (RAND_MAX * 1.0);
-			g = rand() / (RAND_MAX * 1.0);
-			angle = M_PI / 4;
-			radius -= width;
-			sideCount = 0;
+			int currentIndex = (i * ((SIDES_N + 1) * 4)) + (j * 4);
+			array[currentIndex] = cos(angle) * radius;
+			array[currentIndex + 1] = sin(angle) * radius;
+			array[currentIndex + 2] = cos(angle) * (radius - width);
+			array[currentIndex + 3] = sin(angle) * (radius - width);
+			angle += (3 * M_PI / 2) / SIDES_N;
+
+			int colorIndex = (i * ((SIDES_N + 1) * 6)) + (j * 6);
+			color[colorIndex] = r;
+			color[colorIndex + 1] = g;
+			color[colorIndex + 2] = b;
+			color[colorIndex + 3] = r;
+			color[colorIndex + 4] = g;
+			color[colorIndex + 5] = b;
+			b = rand() / (RAND_MAX * 1.0);
 		}
-		color[j] = r;
-		color[j + 1] = g;
-		color[j + 2] = b;
-		printf("%.2f, %.2f, %.2f\n", color[j], color[j + 1], color[j + 2]);
+		angle = M_PI / 4;
+		radius -= width;
+		r = rand() / (RAND_MAX * 1.0);
+		g = rand() / (RAND_MAX * 1.0);
 	}
 }
 
 void generateIndexBuffer(GLushort array[])
 {
-	int nSquares = SIDES_N * LAYERS_N;
-	int sideCount = 0;
-	for (int i = 0, j = 0; i < nSquares * 5; i += 5, j++)
+	int index = 0;
+	int counter = 0;
+	int j = 0;
+	for (int i = 0; i < LAYERS_N * (((SIDES_N + 1) * 2) + 1); i++)
 	{
-		if (sideCount == SIDES_N)
+		array[i] = j;
+		counter++;
+		if (counter == (((SIDES_N + 1) * 2) + 1))
 		{
-			sideCount = 0;
-			// printf("NEW LAYER ------- \n");
-			i -= 5;
+			counter = 0;
+			array[i] = RESET;
+			continue;
 		}
-		else
-		{
-			array[i] = SIDES_N + 1 + j;
-			array[i + 1] = j;
-			array[i + 2] = SIDES_N + 2 + j;
-			array[i + 3] = j + 1;
-			array[i + 4] = RESET;
-			sideCount++;
-			// printf("%d, %d, %d, %d, %d, %d, %X\n", i, j, array[i], array[i + 1], array[i + 2], array[i + 3], array[i + 4]);
-		}
+		j++;
 	}
 }
 
 void initShaders()
 {
-    GLuint vShader = compileShader("shaders/colorPosition.vsh", GL_VERTEX_SHADER);
-    if (!shaderCompiled(vShader))
-        return;
+	GLuint vShader = compileShader("shaders/colorPosition.vsh", GL_VERTEX_SHADER);
+	if (!shaderCompiled(vShader))
+		return;
 
-    GLuint fShader = compileShader("shaders/color.fsh", GL_FRAGMENT_SHADER);
-    if (!shaderCompiled(fShader))
-        return;
+	GLuint fShader = compileShader("shaders/color.fsh", GL_FRAGMENT_SHADER);
+	if (!shaderCompiled(fShader))
+		return;
 
-    programId = glCreateProgram();
-    glAttachShader(programId, vShader);
-    glAttachShader(programId, fShader);
-    glLinkProgram(programId);
-    vertexPosLoc = glGetAttribLocation(programId, "vertexPosition");
-    vertexColLoc = glGetAttribLocation(programId, "vertexColor");
+	programId = glCreateProgram();
+	glAttachShader(programId, vShader);
+	glAttachShader(programId, fShader);
+	glLinkProgram(programId);
+	vertexPosLoc = glGetAttribLocation(programId, "vertexPosition");
+	vertexColLoc = glGetAttribLocation(programId, "vertexColor");
 }
 
 void init()
 {
-	float vertexes[nPoints * 2];
-	float width = 0.1;
-	float color[nPoints * 3];
-	generatePoints(width, vertexes, color);
+	float vertexes[(SIDES_N + 1) * 2 * LAYERS_N * 2];
+	float color[(SIDES_N + 1) * 2 * LAYERS_N * 3];
+	GLushort indexBuffer[LAYERS_N * (((SIDES_N + 1) * 2) + 1)];
+	float width = 0.15;
 
-	GLushort indexBuffer[SIDES_N * LAYERS_N * 5];
+	generatePoints(width, vertexes, color);
 	generateIndexBuffer(indexBuffer);
 
 	glGenVertexArrays(1, va);
@@ -125,7 +127,7 @@ void draw()
 	glUseProgram(programId);
 	glBindVertexArray(va[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferId[2]);
-	glDrawElements(GL_TRIANGLE_STRIP, SIDES_N * LAYERS_N * 5, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLE_STRIP, LAYERS_N * (((SIDES_N + 1) * 2) + 1), GL_UNSIGNED_SHORT, 0);
 	glutSwapBuffers();
 }
 
@@ -148,7 +150,7 @@ int main(int argc, char **argv)
 	glutDisplayFunc(draw);
 	glewInit();
 
-	glClearColor(0.5, 0.5, 0.5, 1.0);
+	glClearColor(1, 1, 1, 1.0);
 	initShaders();
 	init();
 
