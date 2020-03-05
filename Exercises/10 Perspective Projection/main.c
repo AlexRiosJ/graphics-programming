@@ -106,7 +106,8 @@ static void display()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBindVertexArray(va[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 3);
-	rotateY(&csMat, angle++);
+	translate(&csMat, 0, 0, -15);
+	// rotateY(&csMat, angle++);
 	rotateX(&csMat, angle++);
 	rotateZ(&csMat, angle++);
 	glUniformMatrix4fv(csMatrixLoc, 1, GL_TRUE, csMat.values);
@@ -133,14 +134,16 @@ static void reshapeFunc(int w, int h)
 {
 	glViewport(0, 0, w, h);
 	float aspect = (float)w / h;
-	if (aspect >= 1.0)
-	{
-		setOrtho(&projMatrix, -10 * aspect, 10 * aspect, -10, 10, -10, 10);
-	}
-	else
-	{
-		setOrtho(&projMatrix, -10, 10, -10 / aspect, 10 / aspect, -10, 10);
-	}
+	// if (aspect >= 1.0)
+	// {
+	// 	setOrtho(&projMatrix, -10 * aspect, 10 * aspect, -10, 10, -10, 10);
+	// }
+	// else
+	// {
+	// 	setOrtho(&projMatrix, -10, 10, -10 / aspect, 10 / aspect, -10, 10);
+	// }
+
+	setPerspective(&projMatrix, 45, aspect, -6, 6);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMatrix.values);
 }
 

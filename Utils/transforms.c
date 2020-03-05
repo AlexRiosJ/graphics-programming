@@ -138,3 +138,17 @@ void setOrtho(Mat4 *m, float left, float right, float bottom, float top, float f
     m->at[1][3] = -(top + bottom) / (top - bottom);
     m->at[2][3] = -(near + far) / (near - far);
 }
+
+void setPerspective(Mat4 *m, float fovy, float aspect, float nearZ, float farZ)
+{
+    mIdentity(m);
+    float radians = fovy * M_PI / 180;
+    float tanF = tanf(radians / 2);
+    m->at[0][0] = 1.0 / (aspect * tanF);
+    m->at[1][1] = 1.0 / tanF;
+    m->at[2][2] = (farZ + nearZ) / (nearZ - farZ);
+    m->at[2][3] = (-2 * nearZ * farZ) / (nearZ - farZ);
+    m->at[3][2] = -1;
+    m->at[3][3] = 0;
+
+}
