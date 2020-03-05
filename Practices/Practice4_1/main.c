@@ -11,7 +11,7 @@
 #define SIDES_N 5
 #define LAYERS_N 4
 
-#define RESET 0xFF
+#define RESET 0xFFFF
 
 static GLuint va[1];
 static GLuint bufferId[3];
