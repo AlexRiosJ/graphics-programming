@@ -6,20 +6,22 @@
 
 static Mat4 modelMatrix, projectionMatrix, viewMatrix;
 static GLuint programId, vertexPositionLoc, vertexNormalLoc, modelMatrixLoc, projectionMatrixLoc, viewMatrixLoc;
-static GLuint ambientLightLoc, diffuseLightLoc, lightPositionLoc, materialALoc, materialDLoc;
+static GLuint ambientLightLoc, diffuseLightLoc, lightPositionLoc, materialALoc, materialDLoc, materialSLoc, exponentLoc, cameraLoc;
 
 static int motionType = 0;
 static float observerX = 0, observerZ = 0;
 static float cubeAngle = 0;
 static GLuint cubeVA;
-static int N = 5;
+static int N = 15;
 
-static float ambientLight[] = {0.3, 0.3, 0.3};
+static float ambientLight[] = {0.5, 0.5, 0.5};
+static float materialA[] = {0.0, 0.0, 1.0};
+
 static float diffuseLight[] = {1.0, 1.0, 1.0};
 static float lightPosition[] = {0.0, 0.0, -1.0};
-
-static float materialA[] = {0.0, 0.0, 1.0};
 static float materialD[] = {0.6, 0.6, 0.6};
+static float materialS[] = {0.7, 0.7, 0.7};
+static float exponent = 64;
 
 static void initShaders()
 {
@@ -47,6 +49,9 @@ static void initShaders()
 	lightPositionLoc = glGetUniformLocation(programId, "lightPosition");
 	materialALoc = glGetUniformLocation(programId, "materialA");
 	materialDLoc = glGetUniformLocation(programId, "materialD");
+	materialSLoc = glGetUniformLocation(programId, "materialS");
+	exponentLoc = glGetUniformLocation(programId, "exponent");
+	cameraLoc = glGetUniformLocation(programId, "camera");
 
 	glUseProgram(programId);
 	glUniform3fv(ambientLightLoc, 1, ambientLight);
@@ -54,6 +59,8 @@ static void initShaders()
 	glUniform3fv(lightPositionLoc, 1, lightPosition);
 	glUniform3fv(materialALoc, 1, materialA);
 	glUniform3fv(materialDLoc, 1, materialD);
+	glUniform3fv(materialSLoc, 1, materialS);
+	glUniform1f(exponentLoc, exponent);
 }
 
 static void initCube()
@@ -133,6 +140,8 @@ static void displayFunc()
 	case 4:
 		turnLeft();
 	}
+
+	glUniform3f(cameraLoc, observerX, 0, observerZ);
 
 	mIdentity(&viewMatrix);
 	translate(&viewMatrix, -observerX, 0, -observerZ);
@@ -222,7 +231,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("Mi primera experiencia con iluminaci�n");
+	glutCreateWindow("Lighting");
 	glutDisplayFunc(displayFunc);
 	glutReshapeFunc(reshapeFunc);
 	glutTimerFunc(10, timerFunc, 1);
