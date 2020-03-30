@@ -1,4 +1,4 @@
-#version 330
+#version 400
 
 struct Light {
 	vec3 lightColor;
@@ -31,7 +31,8 @@ void main() {
 	vec3 l, r;
 	float factorD, factorS;
 	vec3 v = normalize(cameraPosition - worldVertexPosition);
-	for(int i; i < N; i++) {
+
+	for(int i = 0; i < N; i++) {
 		l = normalize(lights[i].lightPosition - worldVertexPosition);
 		factorD = clamp(dot(l, n), 0.0, 1.0);
 		r = normalize((2 * n) * dot(n, l) - l);
