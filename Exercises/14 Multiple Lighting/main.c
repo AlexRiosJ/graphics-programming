@@ -50,10 +50,10 @@ static vec3 materialA = {0.8, 0.8, 0.8};
 static vec3 materialD = {0.6, 0.6, 0.6};
 static vec3 materialS = {0.6, 0.6, 0.6};
 
-//                          Color    Pad  Position   Exponent
-static float lights[] = {1, 0, 0, 0, -2, 0, 0, 128,
-						 0, 1, 0, 0, 0, 0, 0, 128,
-						 0, 0, 1, 0, 2, 0, 0, 128};
+//                       Color subcutoff Position Exponent Direction Cos(cutoff)
+static float lights[] = {1, 0, 0, 0.866, -2, 0, 0, 128, -1, 0, 0, 0.5,
+						 0, 1, 0, 0.9659, 0, 0, 0, 128, 0, 0, -1, 0.866,
+						 0, 0, 1, 0.9238, 2, 0, 0, 128, 1, 0, 0, 0.7071};
 static GLuint lightsBufferId;
 
 static void initShaders()
@@ -125,7 +125,7 @@ static void initLightCubes()
 		l1, l1, l1, l1, l1, l2, l1, l2, l1, l1, l1, l2, l1, l2, l2, l1, l2, l1, // Izquierda
 		l2, l2, l1, l2, l2, l2, l2, l1, l1, l2, l2, l2, l2, l1, l2, l2, l1, l1, // Derecha
 		l1, l1, l1, l2, l1, l1, l1, l1, l2, l2, l1, l1, l2, l1, l2, l1, l1, l2, // Abajo
-		l2, l2, l1, l1, l2, l1, l2, l2, l2, l1, l2, l1, l1, l2, l2, l2, l2, l2  // Arriba
+		l2, l2, l1, l1, l2, l1, l2, l2, l2, l1, l2, l1, l1, l2, l2, l2, l2, l2	// Arriba
 	};
 	glUseProgram(programId2);
 	glGenVertexArrays(1, &cubeVA);
@@ -150,7 +150,7 @@ static void initRoom()
 		w1, h2, d2, w1, h1, d2, w1, h1, d1, w1, h1, d1, w1, h2, d1, w1, h2, d2, // Izquierda
 		w2, h2, d1, w2, h1, d1, w2, h1, d2, w2, h1, d2, w2, h2, d2, w2, h2, d1, // Derecha
 		w1, h1, d1, w1, h1, d2, w2, h1, d2, w2, h1, d2, w2, h1, d1, w1, h1, d1, // Abajo
-		w1, h2, d2, w1, h2, d1, w2, h2, d1, w2, h2, d1, w2, h2, d2, w1, h2, d2  // Arriba
+		w1, h2, d2, w1, h2, d1, w2, h2, d1, w2, h2, d1, w2, h2, d2, w1, h2, d2	// Arriba
 	};
 
 	float normals[] = {
@@ -279,9 +279,9 @@ static void displayFunc()
 	glUniform3f(cameraPositionLoc, cameraX, 0, cameraZ);
 
 	//	Env�o de la posici�n de la fuente de luz verde
-	lights[12] = greenLightX;
-	lights[13] = greenLightY;
-	lights[14] = greenLightZ;
+	lights[16] = greenLightX;
+	lights[17] = greenLightY;
+	lights[18] = greenLightZ;
 	glBindBuffer(GL_UNIFORM_BUFFER, lightsBufferId);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(lights), lights, GL_DYNAMIC_DRAW);
 	GLuint uniformBlockIndex = glGetUniformBlockIndex(programId1, "LightBlock");
@@ -422,7 +422,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("Tres luces de colores");
+	glutCreateWindow("Multiple lighting");
 	glutDisplayFunc(displayFunc);
 	glutReshapeFunc(reshapeFunc);
 	glutTimerFunc(10, timerFunc, 1);
