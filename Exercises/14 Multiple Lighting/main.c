@@ -179,14 +179,34 @@ static void initRoom()
 	glEnableVertexAttribArray(vertexNormalLoc);
 }
 
-//static void crossProduct(vec3 p1, vec3 p2, vec3 p3, vec3 res) {
-//}
+static void crossProduct(vec3 p1, vec3 p2, vec3 p3, vec3 res)
+{
+	vec3 u = {p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]};
+	vec3 v = {p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]};
+	res[0] = u[1] * v[2] - u[2] * v[1];
+	res[1] = u[2] * v[0] - u[0] * v[2];
+	res[2] = u[0] * v[1] - u[1] * v[0];
+}
 
 static void initRhombus()
 {
 	float positions[] = {0.0, 1.0, 0.6, -0.7, 0.0, 0.0, 0.7, 0.0, 0.0, 0.0, -1.0, 0.6};
 	float normals[12];
 	GLuint indexes[] = {0, 1, 2, 1, 3, 2};
+
+	crossProduct(positions, positions + 3, positions + 6, normals);
+	crossProduct(positions + 3, positions + 9, positions + 6, normals + 9);
+
+	for (int i = 0; i < 3; i++)
+	{
+		normals[i + 3] = normals[i] + normals[i + 9];
+		normals[i + 6] = normals[i] + normals[i + 9];
+	}
+	
+	printf("%.1f, %.1f, %.1f\n", normals[0], normals[1], normals[2]);
+	printf("%.1f, %.1f, %.1f\n", normals[3], normals[4], normals[5]);
+	printf("%.1f, %.1f, %.1f\n", normals[6], normals[7], normals[8]);
+	printf("%.1f, %.1f, %.1f\n", normals[9], normals[10], normals[11]);
 
 	glUseProgram(programId1);
 	glGenVertexArrays(1, &rhombusVA);

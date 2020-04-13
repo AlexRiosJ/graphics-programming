@@ -55,7 +55,7 @@ void main() {
 
 		factorD = clamp(dot(l, n), 0.0, 1.0);
 		r = normalize((2 * n) * dot(n, l) - l);
-		factorS = clamp(pow(dot(r, v), lights[i].exponent), 0.0, 1.0);
+		factorS = pow(clamp(dot(r, v), 0.0, 1.0), lights[i].exponent);
 		temp += factorDeg * factorAtt * lights[i].lightColor * (materialD * factorD + materialS * factorS);
 	}
 
