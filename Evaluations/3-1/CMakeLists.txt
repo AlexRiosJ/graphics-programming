@@ -11,11 +11,12 @@ add_executable(main main.c)
 add_library(utils ../../Utils/utils.c)
 add_library(transforms ../../Utils/transforms.c)
 add_library(mat4 ../../Utils/mat4.c)
+add_library(sphere ../../Utils/sphere.c)
 
 # Link dirs
 
 # Link Libs
-target_link_libraries(main utils mat4 transforms glew32 freeglut opengl32)
+target_link_libraries(main utils mat4 sphere transforms glew32 freeglut opengl32)
 
 # After build
 file(GLOB LIBRARIES "../../Libraries/*.dll")

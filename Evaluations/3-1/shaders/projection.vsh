@@ -9,5 +9,5 @@ out vec3 vertexColorToFS;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1);
-    vertexColorToFS = vec3(0, 0, 0); // vertexColor;
+    vertexColorToFS = vertexColor;
 }
