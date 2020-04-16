@@ -10,7 +10,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-Sphere sphere;
+Sphere sphere1, sphere2;
 
 static GLuint programId, va[1], bufferId[2], vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
 static Mat4 projMatrix;
@@ -49,7 +49,8 @@ static void initShaders()
 	vertexColLoc = glGetAttribLocation(programId, "vertexColor");
 	vertexNormalLoc = glGetAttribLocation(programId, "vertexNormal");
 
-	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+	sphere_bind(sphere1, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+	sphere_bind(sphere2, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
 	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
 	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
@@ -109,11 +110,24 @@ static void display()
 	}
 	rotateY(&viewMat, -cameraAngle);
 	translate(&viewMat, -cameraX, 0, -cameraZ);
-
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMat.values);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMat.values);
 
-	sphere_draw(sphere);
+	static float angle = -45;
+
+	pushMatrix(&modelMat);
+	rotateX(&modelMat, angle);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMat.values);
+	sphere_draw(sphere1);
+
+	popMatrix(&modelMat);
+	rotateY(&modelMat, angle);
+	translate(&modelMat, 0, 0, 2.5);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMat.values);
+	sphere_draw(sphere2);
+
+	angle += 1;
+	if (angle >= 360.0)
+		angle -= 360.0;
 
 	glutSwapBuffers();
 }
@@ -198,8 +212,10 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshapeFunc);
 	glewInit();
 
-	Vertex sphereColor = {0.5, 0.5, 0.5};
-	sphere = sphere_create(2, 40, 40, sphereColor);
+	Vertex sphereColor1 = {1, 0.5, 0.5};
+	sphere1 = sphere_create(2, 40, 40, sphereColor1);
+	Vertex sphereColor2 = {0.6, 0.5, 1};
+	sphere2 = sphere_create(0.3, 40, 40, sphereColor2);
 	initShaders();
 
 	glClearColor(1, 1, 1, 1.0);

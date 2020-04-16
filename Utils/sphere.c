@@ -9,11 +9,10 @@
 #endif
 #define RESET 0xFFFFFFFF
 
-GLuint sphereVA;
-GLuint sphereBuffer[4];
-
 struct strSphere
 {
+	GLuint sphereVA;
+	GLuint sphereBuffer[4];
 	float radius;
 	int parallels;
 	int meridians;
@@ -125,26 +124,26 @@ void sphere_bind(Sphere sphere, GLuint vertexPosLoc, GLuint vertexColLoc, GLuint
 	int totalNormals = sphere->parallels * (sphere->meridians + 1) * 2;
 	int totalIndexes = sphere->parallels * ((sphere->meridians + 1) * 2 + 1);
 
-	glGenVertexArrays(1, &sphereVA);
-	glBindVertexArray(sphereVA);
-	glGenBuffers(4, sphereBuffer);
+	glGenVertexArrays(1, &sphere->sphereVA);
+	glBindVertexArray(sphere->sphereVA);
+	glGenBuffers(4, sphere->sphereBuffer);
 
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBuffer[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, sphere->sphereBuffer[0]);
 	glBufferData(GL_ARRAY_BUFFER, totalPositionVertices * sizeof(Vertex), sphere->vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertexPosLoc);
 	glVertexAttribPointer(vertexPosLoc, 3, GL_FLOAT, 0, 0, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBuffer[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, sphere->sphereBuffer[1]);
 	glBufferData(GL_ARRAY_BUFFER, totalColors * sizeof(Vertex), sphere->colors, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertexColLoc);
 	glVertexAttribPointer(vertexColLoc, 3, GL_FLOAT, 0, 0, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBuffer[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, sphere->sphereBuffer[2]);
 	glBufferData(GL_ARRAY_BUFFER, totalNormals * sizeof(Vertex), sphere->normals, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertexNormalLoc);
 	glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, 0, 0, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBuffer[3]);
+	glBindBuffer(GL_ARRAY_BUFFER, sphere->sphereBuffer[3]);
 	glBufferData(GL_ARRAY_BUFFER, totalIndexes * sizeof(GLuint), sphere->indexBuffer, GL_STATIC_DRAW);
 	glPrimitiveRestartIndex(RESET);
 	glEnable(GL_PRIMITIVE_RESTART);
@@ -152,8 +151,8 @@ void sphere_bind(Sphere sphere, GLuint vertexPosLoc, GLuint vertexColLoc, GLuint
 
 void sphere_draw(Sphere sphere)
 {
-	glBindVertexArray(sphereVA);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereBuffer[3]);
+	glBindVertexArray(sphere->sphereVA);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere->sphereBuffer[3]);
 	int totalIndexes = sphere->parallels * ((sphere->meridians + 1) * 2 + 1);
 	glDrawElements(GL_TRIANGLE_STRIP, totalIndexes * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
