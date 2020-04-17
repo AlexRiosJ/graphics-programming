@@ -10,12 +10,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-Sphere sphere1, sphere2;
-
-static GLuint programId, va[1], bufferId[2], vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
-static Mat4 projMatrix;
-static GLboolean usePerspective = GL_TRUE;
-static float angleY = 0, angleZ = 0;
 typedef enum
 {
 	NONE,
@@ -24,6 +18,14 @@ typedef enum
 	LEFT,
 	RIGHT
 } Motion;
+
+Sphere sphere1, sphere2;
+
+static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
+static Mat4 projectionMatrix, modelMatrix, viewMatrix;
+
+static float angleY = 0, angleZ = 0;
+
 Motion motion = NONE;
 static float cameraX = 0;
 static float cameraZ = 3;
@@ -54,7 +56,7 @@ static void initShaders()
 
 	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
 	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
-	projMatrixLoc = glGetUniformLocation(programId, "projMatrix");
+	projMatrixLoc = glGetUniformLocation(programId, "projectionMatrix");
 
 	glEnable(GL_DEPTH_TEST);
 	//	glEnable(GL_CULL_FACE);
@@ -87,10 +89,8 @@ static void rotateRight()
 
 static void display()
 {
-	Mat4 modelMat;
-	Mat4 viewMat;
-	mIdentity(&modelMat);
-	mIdentity(&viewMat);
+	mIdentity(&modelMatrix);
+	mIdentity(&viewMatrix);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(programId);
 
@@ -108,21 +108,21 @@ static void display()
 	case RIGHT:
 		rotateRight();
 	}
-	rotateY(&viewMat, -cameraAngle);
-	translate(&viewMat, -cameraX, 0, -cameraZ);
-	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMat.values);
+	rotateY(&viewMatrix, -cameraAngle);
+	translate(&viewMatrix, -cameraX, 0, -cameraZ);
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
 
 	static float angle = -45;
 
-	pushMatrix(&modelMat);
-	rotateX(&modelMat, angle);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMat.values);
+	pushMatrix(&modelMatrix);
+	rotateX(&modelMatrix, 90);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	sphere_draw(sphere1);
 
-	popMatrix(&modelMat);
-	rotateY(&modelMat, angle);
-	translate(&modelMat, 0, 0, 2.5);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMat.values);
+	popMatrix(&modelMatrix);
+	rotateY(&modelMatrix, angle);
+	translate(&modelMatrix, 0, 0, 2.5);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	sphere_draw(sphere2);
 
 	angle += 1;
@@ -142,33 +142,15 @@ static void reshapeFunc(int w, int h)
 {
 	glViewport(0, 0, w, h);
 	float aspect = (float)w / h;
-	if (usePerspective)
-	{
-		setPerspective(&projMatrix, 80, aspect, -0.1, -2000);
-	}
-	else
-	{
-		if (aspect >= 1.0)
-			setOrtho(&projMatrix, -6 * aspect, 6 * aspect, -6, 6, -6, 6);
-		else
-			setOrtho(&projMatrix, -6, 6, -6 / aspect, 6 / aspect, -6, 6);
-	}
-	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMatrix.values);
+	setPerspective(&projectionMatrix, 80, aspect, -0.1, -2000);
+	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projectionMatrix.values);
 }
 
 static void exitFunc(unsigned char key, int x, int y)
 {
 	if (key == 27)
 	{
-		glDeleteVertexArrays(1, va);
 		exit(0);
-	}
-	if (key == 13)
-	{
-		usePerspective = !usePerspective;
-		int w = glutGet(GLUT_WINDOW_WIDTH);
-		int h = glutGet(GLUT_WINDOW_HEIGHT);
-		reshapeFunc(w, h);
 	}
 }
 
