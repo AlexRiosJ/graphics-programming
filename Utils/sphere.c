@@ -43,9 +43,6 @@ Sphere sphere_create(float radius, int parallels, int meridians, Vertex sphereCo
 	float theta = 0;
 	float dPhi = M_PI / parallels;
 	float dTetha = 2 * M_PI / meridians;
-	float x = sin(phi) * cos(theta) * radius;
-	float y = sin(phi) * sin(theta) * radius;
-	float z = cos(phi) * radius;
 	int counter = 0;
 	int indexCounter = 0;
 

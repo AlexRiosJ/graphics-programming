@@ -20,13 +20,15 @@ typedef enum
 } Motion;
 
 Sphere sphere;
-static const float SPHERE_RADIUS = 1;
+Vertex spherePosition = {0, 0, 0};
+Vertex sphereVelocity = {0.05, 0.05, 0.07};
+static const float SPHERE_RADIUS = 0.5;
 
-static const int ROOM_WIDTH = 30;
-static const int ROOM_HEIGHT = 20;
-static const int ROOM_DEPTH = 40;
+static const int ROOM_WIDTH = 15;
+static const int ROOM_HEIGHT = 10;
+static const int ROOM_DEPTH = 20;
 
-GLuint roomVA, roomBuffers[1];
+GLuint roomVA, shadowVA;
 
 static Mat4 projectionMatrix, modelMatrix, viewMatrix;
 static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
@@ -94,6 +96,46 @@ static void initShaders()
 	glEnable(GL_DEPTH_TEST);
 	// glEnable(GL_CULL_FACE);
 	// glFrontFace(GL_CCW);
+}
+
+static void initShadow()
+{
+	float theta = 0;
+	float dTheta = 2 * M_PI / 40;
+	Vertex positions[42];
+	Vertex colors[42];
+	positions[0].x = 0;
+	positions[0].y = 0;
+	positions[0].z = 0;
+	colors[0].x = 0;
+	colors[0].y = 0;
+	colors[0].z = 0;
+	for (int i = 0; i < 42; i++)
+	{
+		positions[i].x = SPHERE_RADIUS * cos(theta);
+		positions[i].y = 0;
+		positions[i].z = SPHERE_RADIUS * sin(theta);
+		colors[i].x = 0;
+		colors[i].y = 0;
+		colors[i].z = 0;
+		theta += dTheta;
+	}
+
+	glUseProgram(programId);
+	glGenVertexArrays(1, &shadowVA);
+	glBindVertexArray(shadowVA);
+	GLuint buffers[2];
+	glGenBuffers(2, buffers);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexPosLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexColLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexColLoc);
 }
 
 static void initRoom()
@@ -203,21 +245,57 @@ static void display()
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
 	glUniform3f(cameraLoc, cameraX, 0, cameraZ);
 
-	static float angle = -45;
-
-	mIdentity(&modelMatrix);
-	rotateY(&modelMatrix, 30);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
-	sphere_draw(sphere);
-
 	mIdentity(&modelMatrix);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	glBindVertexArray(roomVA);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	translate(&modelMatrix, spherePosition.x, -ROOM_HEIGHT / 2 + 0.01, spherePosition.z);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+	glBindVertexArray(shadowVA);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 41);
+
+	static float angle = -45;
+
+	mIdentity(&modelMatrix);
+	translate(&modelMatrix, spherePosition.x, spherePosition.y, spherePosition.z);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+	sphere_draw(sphere);
+
 	angle += 1;
 	if (angle >= 360.0)
 		angle -= 360.0;
+
+	spherePosition.x += sphereVelocity.x;
+	spherePosition.y += sphereVelocity.y;
+	spherePosition.z += sphereVelocity.z;
+
+	if (spherePosition.x + SPHERE_RADIUS >= ROOM_WIDTH / 2)
+	{
+		sphereVelocity.x *= -1;
+	}
+	else if (spherePosition.x - SPHERE_RADIUS <= -ROOM_WIDTH / 2)
+	{
+		sphereVelocity.x *= -1;
+	}
+
+	if (spherePosition.y + SPHERE_RADIUS >= ROOM_HEIGHT / 2)
+	{
+		sphereVelocity.y *= -1;
+	}
+	else if (spherePosition.y - SPHERE_RADIUS <= -ROOM_HEIGHT / 2)
+	{
+		sphereVelocity.y *= -1;
+	}
+
+	if (spherePosition.z + SPHERE_RADIUS >= ROOM_DEPTH / 2)
+	{
+		sphereVelocity.z *= -1;
+	}
+	else if (spherePosition.z - SPHERE_RADIUS <= -ROOM_DEPTH / 2)
+	{
+		sphereVelocity.z *= -1;
+	}
 
 	glutSwapBuffers();
 }
@@ -287,6 +365,7 @@ int main(int argc, char **argv)
 	sphere = sphere_create(SPHERE_RADIUS, 40, 40, sphereColor1);
 	initShaders();
 	initRoom();
+	initShadow();
 
 	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glutMainLoop();
