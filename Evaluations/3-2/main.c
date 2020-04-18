@@ -20,6 +20,13 @@ typedef enum
 } Motion;
 
 Sphere sphere;
+static const float SPHERE_RADIUS = 1;
+
+static const int ROOM_WIDTH = 30;
+static const int ROOM_HEIGHT = 20;
+static const int ROOM_DEPTH = 40;
+
+GLuint roomVA, roomBuffers[1];
 
 static Mat4 projectionMatrix, modelMatrix, viewMatrix;
 static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
@@ -36,9 +43,9 @@ static float rotationSpeed = 2;
 
 static float ambientLight[] = {1, 1, 1};
 static float materialA[] = {0.5, 0.5, 0.5};
-static float diffuseLight[] = {1, 1, 1};
-static float lightPosition[] = {0, 0, 5};
-static float materialD[] = {0.5, 0.5, 0.5};
+static float diffuseLight[] = {0.5, 0.5, 0.5};
+static float lightPosition[] = {0, 0, 8};
+static float materialD[] = {0.8, 0.8, 0.8};
 static float materialS[] = {0.5, 0.5, 0.5};
 static float exponent = 16;
 
@@ -85,8 +92,63 @@ static void initShaders()
 	glUniform1f(exponentLoc, exponent);
 
 	glEnable(GL_DEPTH_TEST);
-	//	glEnable(GL_CULL_FACE);
-	//	glFrontFace(GL_CW);
+	// glEnable(GL_CULL_FACE);
+	// glFrontFace(GL_CCW);
+}
+
+static void initRoom()
+{
+	float w1 = -ROOM_WIDTH / 2, w2 = ROOM_WIDTH / 2;
+	float h1 = -ROOM_HEIGHT / 2, h2 = ROOM_HEIGHT / 2;
+	float d1 = -ROOM_DEPTH / 2, d2 = ROOM_DEPTH / 2;
+
+	float positions[] = {
+		w1, h2, d1, w1, h1, d1, w2, h1, d1, w2, h1, d1, w2, h2, d1, w1, h2, d1, // Frente
+		w2, h2, d2, w2, h1, d2, w1, h1, d2, w1, h1, d2, w1, h2, d2, w2, h2, d2, // Atr�s
+		w1, h2, d2, w1, h1, d2, w1, h1, d1, w1, h1, d1, w1, h2, d1, w1, h2, d2, // Izquierda
+		w2, h2, d1, w2, h1, d1, w2, h1, d2, w2, h1, d2, w2, h2, d2, w2, h2, d1, // Derecha
+		w1, h1, d1, w1, h1, d2, w2, h1, d2, w2, h1, d2, w2, h1, d1, w1, h1, d1, // Abajo
+		w1, h2, d2, w1, h2, d1, w2, h2, d1, w2, h2, d1, w2, h2, d2, w1, h2, d2	// Arriba
+	};
+
+	float colors[] = {
+		0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, // Frente
+		0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, // Atr�s
+		1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, // Izquierda
+		1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, // Derecha
+		0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, // Abajo
+		1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, // Arriba
+	};
+
+	float normals[] = {
+		0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,		// Frente
+		0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, // Atr�s
+		1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,		// Izquierda
+		-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, // Derecha
+		0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,		// Abajo
+		0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, // Arriba
+	};
+
+	glUseProgram(programId);
+	glGenVertexArrays(1, &roomVA);
+	glBindVertexArray(roomVA);
+	GLuint buffers[3];
+	glGenBuffers(3, buffers);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexPosLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexColLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexColLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexNormalLoc);
 }
 
 static void moveForward()
@@ -136,17 +198,22 @@ static void display()
 	mIdentity(&viewMatrix);
 	glUseProgram(programId);
 
-	glUniform3f(cameraLoc, cameraX, 0, cameraZ);
-
 	rotateY(&viewMatrix, -cameraAngle);
 	translate(&viewMatrix, -cameraX, 0, -cameraZ);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
+	glUniform3f(cameraLoc, cameraX, 0, cameraZ);
 
 	static float angle = -45;
 
+	mIdentity(&modelMatrix);
 	rotateY(&modelMatrix, 30);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	sphere_draw(sphere);
+
+	mIdentity(&modelMatrix);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+	glBindVertexArray(roomVA);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	angle += 1;
 	if (angle >= 360.0)
@@ -216,13 +283,12 @@ int main(int argc, char **argv)
 	glutSpecialUpFunc(specialKeyReleased);
 	glutReshapeFunc(reshapeFunc);
 	glewInit();
-
 	Vertex sphereColor1 = {0.8, 0.3, 0.8};
-	sphere = sphere_create(1.5, 40, 40, sphereColor1);
-
+	sphere = sphere_create(SPHERE_RADIUS, 40, 40, sphereColor1);
 	initShaders();
+	initRoom();
 
-	glClearColor(0, 0, 0, 1.0);
+	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glutMainLoop();
 	return 0;
 }
