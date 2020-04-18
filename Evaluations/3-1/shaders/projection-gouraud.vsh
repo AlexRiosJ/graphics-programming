@@ -36,5 +36,5 @@ void main() {
     float factorS = clamp(pow(dot(reflected, vertexToCamera), exponent), 0.0, 1.0);
 
     vertexColorToFS = ambientLight * materialA + diffuseLight * (materialD * factorD + materialS * factorS);
-    vertexColorToFS = clamp(vertexColorToFS, 0.0, 1.0) * vertexColor;
+    vertexColorToFS = clamp(vertexColorToFS * vertexColor, 0.0, 1.0);
 }

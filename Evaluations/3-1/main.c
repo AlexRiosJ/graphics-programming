@@ -19,7 +19,7 @@ typedef enum
 	RIGHT
 } Motion;
 
-Sphere sphere1, sphere2;
+Sphere sphere;
 
 static Mat4 projectionMatrix, modelMatrix, viewMatrix;
 static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
@@ -35,12 +35,12 @@ static float cameraSpeed = 0.1;
 static float rotationSpeed = 2;
 
 static float ambientLight[] = {1, 1, 1};
-static float materialA[] = {1, 1, 1};
-static float diffuseLight[] = {1.0, 1.0, 1.0};
-static float lightPosition[] = {50, 0.0, 0.0};
-static float materialD[] = {1, 1, 1};
-static float materialS[] = {1, 1, 1};
-static float exponent = 64;
+static float materialA[] = {0.5, 0.5, 0.5};
+static float diffuseLight[] = {1, 1, 1};
+static float lightPosition[] = {0, 0, 5};
+static float materialD[] = {0.5, 0.5, 0.5};
+static float materialS[] = {0.5, 0.5, 0.5};
+static float exponent = 16;
 
 static void initShaders()
 {
@@ -74,8 +74,7 @@ static void initShaders()
 	exponentLoc = glGetUniformLocation(programId, "exponent");
 	cameraLoc = glGetUniformLocation(programId, "camera");
 
-	sphere_bind(sphere1, vertexPosLoc, vertexColLoc, vertexNormalLoc);
-	sphere_bind(sphere2, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
 	glUniform3fv(ambientLightLoc, 1, ambientLight);
 	glUniform3fv(diffuseLightLoc, 1, diffuseLight);
@@ -145,18 +144,9 @@ static void display()
 
 	static float angle = -45;
 
-	glUniform3f(materialALoc, 0, 0, 0);
-
-	pushMatrix(&modelMatrix);
-	rotateX(&modelMatrix, angle);
+	rotateY(&modelMatrix, 30);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
-	sphere_draw(sphere1);
-
-	popMatrix(&modelMatrix);
-	rotateY(&modelMatrix, angle);
-	translate(&modelMatrix, 0, 0, 2.5);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
-	sphere_draw(sphere2);
+	sphere_draw(sphere);
 
 	angle += 1;
 	if (angle >= 360.0)
@@ -227,10 +217,9 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshapeFunc);
 	glewInit();
 
-	Vertex sphereColor1 = {1, 0.8, 0.3};
-	sphere1 = sphere_create(2, 150, 150, sphereColor1);
-	Vertex sphereColor2 = {1, 0, 1};
-	sphere2 = sphere_create(0.3, 150, 150, sphereColor2);
+	Vertex sphereColor1 = {0.8, 0.3, 0.8};
+	sphere = sphere_create(1.5, 40, 40, sphereColor1);
+
 	initShaders();
 
 	glClearColor(0, 0, 0, 1.0);
