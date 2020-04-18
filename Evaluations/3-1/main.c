@@ -21,8 +21,9 @@ typedef enum
 
 Sphere sphere1, sphere2;
 
-static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
 static Mat4 projectionMatrix, modelMatrix, viewMatrix;
+static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
+static GLuint ambientLightLoc, diffuseLightLoc, lightPositionLoc, materialALoc, materialDLoc, materialSLoc, exponentLoc, cameraLoc;
 
 static float angleY = 0, angleZ = 0;
 
@@ -33,9 +34,17 @@ static float cameraAngle = 0;
 static float cameraSpeed = 0.1;
 static float rotationSpeed = 2;
 
+static float ambientLight[] = {1, 1, 1};
+static float materialA[] = {1, 1, 1};
+static float diffuseLight[] = {1.0, 1.0, 1.0};
+static float lightPosition[] = {50, 0.0, 0.0};
+static float materialD[] = {1, 1, 1};
+static float materialS[] = {1, 1, 1};
+static float exponent = 64;
+
 static void initShaders()
 {
-	GLuint vShader = compileShader("shaders/projection.vsh", GL_VERTEX_SHADER);
+	GLuint vShader = compileShader("shaders/projection-gouraud.vsh", GL_VERTEX_SHADER);
 	if (!shaderCompiled(vShader))
 		return;
 	GLuint fShader = compileShader("shaders/color.fsh", GL_FRAGMENT_SHADER);
@@ -46,17 +55,35 @@ static void initShaders()
 	glAttachShader(programId, vShader);
 	glAttachShader(programId, fShader);
 	glLinkProgram(programId);
+
 	glUseProgram(programId);
+
 	vertexPosLoc = glGetAttribLocation(programId, "vertexPosition");
 	vertexColLoc = glGetAttribLocation(programId, "vertexColor");
 	vertexNormalLoc = glGetAttribLocation(programId, "vertexNormal");
+	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
+	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
+	projMatrixLoc = glGetUniformLocation(programId, "projectionMatrix");
+
+	ambientLightLoc = glGetUniformLocation(programId, "ambientLight");
+	diffuseLightLoc = glGetUniformLocation(programId, "diffuseLight");
+	lightPositionLoc = glGetUniformLocation(programId, "lightPosition");
+	materialALoc = glGetUniformLocation(programId, "materialA");
+	materialDLoc = glGetUniformLocation(programId, "materialD");
+	materialSLoc = glGetUniformLocation(programId, "materialS");
+	exponentLoc = glGetUniformLocation(programId, "exponent");
+	cameraLoc = glGetUniformLocation(programId, "camera");
 
 	sphere_bind(sphere1, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 	sphere_bind(sphere2, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
-	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
-	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
-	projMatrixLoc = glGetUniformLocation(programId, "projectionMatrix");
+	glUniform3fv(ambientLightLoc, 1, ambientLight);
+	glUniform3fv(diffuseLightLoc, 1, diffuseLight);
+	glUniform3fv(lightPositionLoc, 1, lightPosition);
+	glUniform3fv(materialALoc, 1, materialA);
+	glUniform3fv(materialDLoc, 1, materialD);
+	glUniform3fv(materialSLoc, 1, materialS);
+	glUniform1f(exponentLoc, exponent);
 
 	glEnable(GL_DEPTH_TEST);
 	//	glEnable(GL_CULL_FACE);
@@ -89,10 +116,7 @@ static void rotateRight()
 
 static void display()
 {
-	mIdentity(&modelMatrix);
-	mIdentity(&viewMatrix);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUseProgram(programId);
 
 	switch (motion)
 	{
@@ -108,14 +132,23 @@ static void display()
 	case RIGHT:
 		rotateRight();
 	}
+
+	mIdentity(&modelMatrix);
+	mIdentity(&viewMatrix);
+	glUseProgram(programId);
+
+	glUniform3f(cameraLoc, cameraX, 0, cameraZ);
+
 	rotateY(&viewMatrix, -cameraAngle);
 	translate(&viewMatrix, -cameraX, 0, -cameraZ);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
 
 	static float angle = -45;
 
+	glUniform3f(materialALoc, 0, 0, 0);
+
 	pushMatrix(&modelMatrix);
-	rotateX(&modelMatrix, 90);
+	rotateX(&modelMatrix, angle);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	sphere_draw(sphere1);
 
@@ -134,7 +167,7 @@ static void display()
 
 static void timerFunc(int id)
 {
-	glutTimerFunc(20, timerFunc, id);
+	glutTimerFunc(10, timerFunc, id);
 	glutPostRedisplay();
 }
 
@@ -142,7 +175,7 @@ static void reshapeFunc(int w, int h)
 {
 	glViewport(0, 0, w, h);
 	float aspect = (float)w / h;
-	setPerspective(&projectionMatrix, 80, aspect, -0.1, -2000);
+	setPerspective(&projectionMatrix, 70, aspect, -0.1, -2000);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projectionMatrix.values);
 }
 
@@ -181,7 +214,7 @@ int main(int argc, char **argv)
 {
 	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(1280, 720);
 	glutInitWindowPosition(100, 100);
 	glutTimerFunc(50, timerFunc, 1);
@@ -194,13 +227,13 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshapeFunc);
 	glewInit();
 
-	Vertex sphereColor1 = {1, 0.5, 0.5};
-	sphere1 = sphere_create(2, 40, 40, sphereColor1);
-	Vertex sphereColor2 = {0.6, 0.5, 1};
-	sphere2 = sphere_create(0.3, 40, 40, sphereColor2);
+	Vertex sphereColor1 = {1, 0.8, 0.3};
+	sphere1 = sphere_create(2, 150, 150, sphereColor1);
+	Vertex sphereColor2 = {1, 0, 1};
+	sphere2 = sphere_create(0.3, 150, 150, sphereColor2);
 	initShaders();
 
-	glClearColor(1, 1, 1, 1.0);
+	glClearColor(0, 0, 0, 1.0);
 	glutMainLoop();
 	return 0;
 }
