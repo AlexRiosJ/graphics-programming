@@ -218,6 +218,7 @@ int main(int argc, char **argv)
 
 	Vertex sphereColor1 = {0.8, 0.3, 0.8};
 	sphere = sphere_create(1.5, 40, 40, sphereColor1);
+	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
 	glClearColor(0, 0, 0, 1.0);
 	glutMainLoop();
