@@ -56,13 +56,10 @@ Sphere sphere_create(float radius, int parallels, int meridians, Vertex sphereCo
 			float x = sin(phi) * cos(theta) * radius;
 			float y = sin(phi) * sin(theta) * radius;
 			float z = cos(phi) * radius;
-			sphere->vertices[counter].x = x;
-			sphere->vertices[counter].y = y;
-			sphere->vertices[counter].z = z;
 
-			sphere->normals[counter].x = x;
-			sphere->normals[counter].y = y;
-			sphere->normals[counter].z = z;
+			sphere->normals[counter].x = sphere->vertices[counter].x = x;
+			sphere->normals[counter].y = sphere->vertices[counter].y = y;
+			sphere->normals[counter].z = sphere->vertices[counter].z = z;
 			// printf("%d: %.2f, %.2f, %.2f\t", counter, sphere->vertices[counter].x, sphere->vertices[counter].y, sphere->vertices[counter].z);
 
 			sphere->colors[counter].x = randR + sphereColor.x * 0.8;
@@ -80,13 +77,9 @@ Sphere sphere_create(float radius, int parallels, int meridians, Vertex sphereCo
 			y = sin(phi + dPhi) * sin(theta) * radius;
 			z = cos(phi + dPhi) * radius;
 
-			sphere->vertices[counter].x = x;
-			sphere->vertices[counter].y = y;
-			sphere->vertices[counter].z = z;
-
-			sphere->normals[counter].x = x;
-			sphere->normals[counter].y = y;
-			sphere->normals[counter].z = z;
+			sphere->normals[counter].x = sphere->vertices[counter].x = x;
+			sphere->normals[counter].y = sphere->vertices[counter].y = y;
+			sphere->normals[counter].z = sphere->vertices[counter].z = z;
 			// printf("%d: %.2f, %.2f, %.2f\t", counter, sphere->vertices[counter].x, sphere->vertices[counter].y, sphere->vertices[counter].z);
 
 			sphere->colors[counter].x = randR + sphereColor.x * 0.8;

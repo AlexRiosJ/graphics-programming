@@ -25,7 +25,7 @@ static const int ROOM_WIDTH = 15;
 static const int ROOM_HEIGHT = 10;
 static const int ROOM_DEPTH = 20;
 
-float rotx = 0, roty = 0;
+static float movex = 0, movey = 0;
 
 GLuint roomVA, shadowVA;
 
@@ -36,7 +36,7 @@ static GLuint ambientLightLoc, diffuseLightLoc, lightPositionLoc, materialALoc, 
 static float ambientLight[] = {1, 1, 1};
 static float materialA[] = {0.5, 0.5, 0.5};
 static float diffuseLight[] = {0.5, 0.5, 0.5};
-static float lightPosition[] = {0, 0, 8};
+static float lightPosition[] = {0, 0, 0};
 static float materialD[] = {0.8, 0.8, 0.8};
 static float materialS[] = {0.5, 0.5, 0.5};
 static float exponent = 16;
@@ -147,7 +147,7 @@ static void initRoom()
 		1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, // Izquierda
 		1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, // Derecha
 		0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, // Abajo
-		1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, // Arriba
+		1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1  // Arriba
 	};
 
 	float normals[] = {
@@ -156,7 +156,7 @@ static void initRoom()
 		1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,		// Izquierda
 		-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, // Derecha
 		0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,		// Abajo
-		0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, // Arriba
+		0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0	// Arriba
 	};
 
 	glUseProgram(programId);
@@ -183,27 +183,51 @@ static void initRoom()
 
 static void move()
 {
+	float threshold = 0.2;
+	float w1 = -ROOM_WIDTH / 2 + threshold, w2 = ROOM_WIDTH / 2 - threshold;
+	float h1 = -ROOM_HEIGHT / 2 + threshold, h2 = ROOM_HEIGHT / 2 - threshold;
+	float d1 = -ROOM_DEPTH / 2 + threshold, d2 = ROOM_DEPTH / 2 - threshold;
+
+	float nextForwardXPosition = cameraSpeed * -sin(toRadians(movex * 0.08));
+	float nextForwardYPosition = cameraSpeed * sin(toRadians(movey * 0.08));
+	float nextForwardZPosition = cameraSpeed * cos(toRadians(movex * 0.08));
+
+	float nextSideXPosition = cameraSpeed * cos(toRadians(-movex * 0.08));
+	float nextSideZPosition = cameraSpeed * -sin(toRadians(-movex * 0.08));
+
 	if (keys['w'])
 	{
-		cameraPosition.x += cameraSpeed * -sin(toRadians(rotx * 0.08));
-		cameraPosition.y += cameraSpeed * sin(toRadians(roty * 0.08));
-		cameraPosition.z += cameraSpeed * cos(toRadians(rotx * 0.08));
+		if (cameraPosition.x - nextForwardXPosition > w1 && cameraPosition.x - nextForwardXPosition < w2)
+			cameraPosition.x -= nextForwardXPosition;
+		if (cameraPosition.y - nextForwardYPosition > h1 && cameraPosition.y - nextForwardYPosition < h2)
+			cameraPosition.y -= nextForwardYPosition;
+		if (cameraPosition.z - nextForwardZPosition > d1 &&
+			cameraPosition.z - nextForwardZPosition < d2)
+			cameraPosition.z -= nextForwardZPosition;
 	}
 	if (keys['s'])
 	{
-		cameraPosition.x -= cameraSpeed * -sin(toRadians(rotx * 0.08));
-		cameraPosition.y -= cameraSpeed * sin(toRadians(roty * 0.08));
-		cameraPosition.z -= cameraSpeed * cos(toRadians(rotx * 0.08));
+		if (cameraPosition.x + nextForwardXPosition > w1 && cameraPosition.x + nextForwardXPosition < w2)
+			cameraPosition.x += nextForwardXPosition;
+		if (cameraPosition.y + nextForwardYPosition > h1 && cameraPosition.y + nextForwardYPosition < h2)
+			cameraPosition.y += nextForwardYPosition;
+		if (cameraPosition.z + nextForwardZPosition > d1 &&
+			cameraPosition.z + nextForwardZPosition < d2)
+			cameraPosition.z += nextForwardZPosition;
 	}
 	if (keys['a'])
 	{
-		cameraPosition.x += cameraSpeed * cos(toRadians(-rotx * 0.08));
-		cameraPosition.z += cameraSpeed * -sin(toRadians(-rotx * 0.08));
+		if (cameraPosition.x - nextSideXPosition > w1 && cameraPosition.x - nextSideXPosition < w2)
+			cameraPosition.x -= nextSideXPosition;
+		if (cameraPosition.z - nextSideZPosition > d1 && cameraPosition.z - nextSideZPosition < d2)
+			cameraPosition.z -= nextSideZPosition;
 	}
 	if (keys['d'])
 	{
-		cameraPosition.x -= cameraSpeed * cos(toRadians(-rotx * 0.08));
-		cameraPosition.z -= cameraSpeed * -sin(toRadians(-rotx * 0.08));
+		if (cameraPosition.x + nextSideXPosition > w1 && cameraPosition.x + nextSideXPosition < w2)
+			cameraPosition.x += nextSideXPosition;
+		if (cameraPosition.z + nextSideZPosition > d1 && cameraPosition.z + nextSideZPosition < d2)
+			cameraPosition.z += nextSideZPosition;
 	}
 }
 
@@ -216,11 +240,12 @@ static void display()
 	mIdentity(&viewMatrix);
 
 	move();
-	rotateX(&viewMatrix, roty * 0.08);
-	rotateY(&viewMatrix, rotx * 0.08);
-	translate(&viewMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
 	glUniform3f(cameraLoc, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+	rotateX(&viewMatrix, movey * 0.08);
+	rotateY(&viewMatrix, movex * 0.08);
+	translate(&viewMatrix, -cameraPosition.x, -cameraPosition.y, -cameraPosition.z);
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
 
 	mIdentity(&modelMatrix);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
@@ -300,8 +325,8 @@ static void keyReleased(unsigned char key, int x, int y)
 
 void rotateCamera(int x, int y)
 {
-	rotx += (float)(x - glutGet(GLUT_WINDOW_WIDTH) / 2);
-	roty += (float)(y - glutGet(GLUT_WINDOW_HEIGHT) / 2);
+	movex += (float)(x - glutGet(GLUT_WINDOW_WIDTH) / 2);
+	movey += (float)(y - glutGet(GLUT_WINDOW_HEIGHT) / 2);
 	glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
 }
 
@@ -337,7 +362,7 @@ int main(int argc, char **argv)
 	initRoom();
 	initShadow();
 
-	glClearColor(0.1, 0.1, 0.1, 1.0);
+	glClearColor(0, 0, 0, 1.0);
 	glutMainLoop();
 	return 0;
 }
