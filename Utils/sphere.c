@@ -53,7 +53,6 @@ Sphere sphere_create(float radius, int parallels, int meridians, Vertex sphereCo
 		float randB = (float)rand() / RAND_MAX * 0.2;
 		for (int j = 0; j < (meridians + 1) * 2; j += 2)
 		{
-			int index = i * ((meridians + 1) * 2) + j;
 			float x = sin(phi) * cos(theta) * radius;
 			float y = sin(phi) * sin(theta) * radius;
 			float z = cos(phi) * radius;

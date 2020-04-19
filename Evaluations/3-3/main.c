@@ -9,39 +9,29 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-typedef enum
-{
-	NONE,
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-} Motion;
+#define toRadians(deg) deg *M_PI / 180.0
 
 Sphere sphere;
 Vertex spherePosition = {0, 0, 0};
 Vertex sphereVelocity = {0.05, 0.05, 0.07};
 static const float SPHERE_RADIUS = 0.5;
 
+Vertex cameraPosition = {0, 0, 0};
+float cameraSpeed = 0.05;
+
+unsigned char keys[256];
+
 static const int ROOM_WIDTH = 15;
 static const int ROOM_HEIGHT = 10;
 static const int ROOM_DEPTH = 20;
+
+float rotx = 0, roty = 0;
 
 GLuint roomVA, shadowVA;
 
 static Mat4 projectionMatrix, modelMatrix, viewMatrix;
 static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
 static GLuint ambientLightLoc, diffuseLightLoc, lightPositionLoc, materialALoc, materialDLoc, materialSLoc, exponentLoc, cameraLoc;
-
-static float angleY = 0, angleZ = 0;
-
-Motion motion = NONE;
-static float cameraX = 0;
-static float cameraZ = 3;
-static float cameraAngle = 0;
-static float cameraSpeed = 0.1;
-static float rotationSpeed = 2;
 
 static float ambientLight[] = {1, 1, 1};
 static float materialA[] = {0.5, 0.5, 0.5};
@@ -82,8 +72,6 @@ static void initShaders()
 	materialSLoc = glGetUniformLocation(programId, "materialS");
 	exponentLoc = glGetUniformLocation(programId, "exponent");
 	cameraLoc = glGetUniformLocation(programId, "camera");
-
-	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
 	glUniform3fv(ambientLightLoc, 1, ambientLight);
 	glUniform3fv(diffuseLightLoc, 1, diffuseLight);
@@ -193,52 +181,46 @@ static void initRoom()
 	glEnableVertexAttribArray(vertexNormalLoc);
 }
 
-static void moveForward()
+static void move()
 {
-	float radians = M_PI * cameraAngle / 180;
-	cameraX -= cameraSpeed * sin(radians);
-	cameraZ -= cameraSpeed * cos(radians);
-}
-
-static void moveBackward()
-{
-	float radians = M_PI * cameraAngle / 180;
-	cameraX += cameraSpeed * sin(radians);
-	cameraZ += cameraSpeed * cos(radians);
-}
-
-static void rotateLeft()
-{
-	cameraAngle += rotationSpeed;
-}
-
-static void rotateRight()
-{
-	cameraAngle -= rotationSpeed;
+	if (keys['w'])
+	{
+		cameraPosition.x += cameraSpeed * -sin(toRadians(rotx * 0.08));
+		cameraPosition.y += cameraSpeed * sin(toRadians(roty * 0.08));
+		cameraPosition.z += cameraSpeed * cos(toRadians(rotx * 0.08));
+	}
+	if (keys['s'])
+	{
+		cameraPosition.x -= cameraSpeed * -sin(toRadians(rotx * 0.08));
+		cameraPosition.y -= cameraSpeed * sin(toRadians(roty * 0.08));
+		cameraPosition.z -= cameraSpeed * cos(toRadians(rotx * 0.08));
+	}
+	if (keys['a'])
+	{
+		cameraPosition.x += cameraSpeed * cos(toRadians(-rotx * 0.08));
+		cameraPosition.z += cameraSpeed * -sin(toRadians(-rotx * 0.08));
+	}
+	if (keys['d'])
+	{
+		cameraPosition.x -= cameraSpeed * cos(toRadians(-rotx * 0.08));
+		cameraPosition.z -= cameraSpeed * -sin(toRadians(-rotx * 0.08));
+	}
 }
 
 static void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	switch (motion)
-	{
-	case FORWARD:
-		moveForward();
-		break;
-	case BACKWARD:
-		moveBackward();
-		break;
-	}
-
-	mIdentity(&modelMatrix);
-	mIdentity(&viewMatrix);
 	glUseProgram(programId);
 
-	rotateY(&viewMatrix, -cameraAngle);
-	translate(&viewMatrix, -cameraX, 0, -cameraZ);
+	mIdentity(&viewMatrix);
+
+	move();
+	rotateX(&viewMatrix, roty * 0.08);
+	rotateY(&viewMatrix, rotx * 0.08);
+	translate(&viewMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, viewMatrix.values);
-	glUniform3f(cameraLoc, cameraX, 0, cameraZ);
+	glUniform3f(cameraLoc, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
 	mIdentity(&modelMatrix);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
@@ -250,16 +232,10 @@ static void display()
 	glBindVertexArray(shadowVA);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 41);
 
-	static float angle = -45;
-
 	mIdentity(&modelMatrix);
 	translate(&modelMatrix, spherePosition.x, spherePosition.y, spherePosition.z);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	sphere_draw(sphere);
-
-	angle += 1;
-	if (angle >= 360.0)
-		angle -= 360.0;
 
 	spherePosition.x += sphereVelocity.x;
 	spherePosition.y += sphereVelocity.y;
@@ -297,6 +273,7 @@ static void display()
 
 static void timerFunc(int id)
 {
+	glutWarpPointer(glutGet(GLUT_WINDOW_X) + glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_Y) + glutGet(GLUT_WINDOW_HEIGHT) / 2);
 	glutTimerFunc(10, timerFunc, id);
 	glutPostRedisplay();
 }
@@ -309,41 +286,28 @@ static void reshapeFunc(int w, int h)
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projectionMatrix.values);
 }
 
-static void exitFunc(unsigned char key, int x, int y)
+static void keyPressed(unsigned char key, int x, int y)
 {
 	if (key == 27)
-	{
 		exit(0);
-	}
+	keys[key] = 1;
 }
 
-static void specialKeyPressed(int code, int x, int y)
+static void keyReleased(unsigned char key, int x, int y)
 {
-	switch (code)
-	{
-	case 101:
-		motion = FORWARD;
-		break;
-	case 103:
-		motion = BACKWARD;
-		break;
-	case 100:
-		motion = LEFT;
-		break;
-	case 102:
-		motion = RIGHT;
-	}
+	keys[key] = 0;
 }
 
-static void specialKeyReleased(int code, int x, int y)
+void rotateCamera(int x, int y)
 {
-	motion = NONE;
+	rotx += (float)(x - glutGet(GLUT_WINDOW_WIDTH) / 2);
+	roty += (float)(y - glutGet(GLUT_WINDOW_HEIGHT) / 2);
+	glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
 }
 
 static void mouseMove(int x, int y)
 {
-	printf("%d\t%d\n", x, y);
-	glutPostRedisplay();
+	rotateCamera(x, y);
 }
 
 int main(int argc, char **argv)
@@ -358,15 +322,18 @@ int main(int argc, char **argv)
 	glutFullScreen();
 	glutSetCursor(GLUT_CURSOR_CROSSHAIR);
 	glutPassiveMotionFunc(mouseMove);
+	glutMotionFunc(mouseMove);
 	glutDisplayFunc(display);
-	glutKeyboardFunc(exitFunc);
-	glutSpecialFunc(specialKeyPressed);
-	glutSpecialUpFunc(specialKeyReleased);
+	glutKeyboardFunc(keyPressed);
+	glutKeyboardUpFunc(keyReleased);
 	glutReshapeFunc(reshapeFunc);
 	glewInit();
+	initShaders();
+
 	Vertex sphereColor1 = {0.8, 0.3, 0.8};
 	sphere = sphere_create(SPHERE_RADIUS, 40, 40, sphereColor1);
-	initShaders();
+	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+
 	initRoom();
 	initShadow();
 
