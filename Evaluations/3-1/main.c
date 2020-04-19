@@ -74,8 +74,6 @@ static void initShaders()
 	exponentLoc = glGetUniformLocation(programId, "exponent");
 	cameraLoc = glGetUniformLocation(programId, "camera");
 
-	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
-
 	glUniform3fv(ambientLightLoc, 1, ambientLight);
 	glUniform3fv(diffuseLightLoc, 1, diffuseLight);
 	glUniform3fv(lightPositionLoc, 1, lightPosition);
@@ -216,11 +214,10 @@ int main(int argc, char **argv)
 	glutSpecialUpFunc(specialKeyReleased);
 	glutReshapeFunc(reshapeFunc);
 	glewInit();
+	initShaders();
 
 	Vertex sphereColor1 = {0.8, 0.3, 0.8};
 	sphere = sphere_create(1.5, 40, 40, sphereColor1);
-
-	initShaders();
 
 	glClearColor(0, 0, 0, 1.0);
 	glutMainLoop();

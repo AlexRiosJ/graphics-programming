@@ -42,7 +42,7 @@ Sphere sphere_create(float radius, int parallels, int meridians, Vertex sphereCo
 	float phi = 0;
 	float theta = 0;
 	float dPhi = M_PI / parallels;
-	float dTetha = 2 * M_PI / meridians;
+	float dTheta = 2 * M_PI / meridians;
 	int counter = 0;
 	int indexCounter = 0;
 
@@ -101,9 +101,10 @@ Sphere sphere_create(float radius, int parallels, int meridians, Vertex sphereCo
 			counter++;
 			indexCounter++;
 
-			theta += dTetha;
+			theta += dTheta;
 		}
-		dTetha = 2 * M_PI / meridians;
+		
+		theta = 0;
 		phi += dPhi;
 		sphere->indexBuffer[indexCounter] = RESET;
 

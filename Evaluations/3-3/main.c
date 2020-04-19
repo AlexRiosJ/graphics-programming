@@ -229,11 +229,6 @@ static void display()
 	case BACKWARD:
 		moveBackward();
 		break;
-	case LEFT:
-		rotateLeft();
-		break;
-	case RIGHT:
-		rotateRight();
 	}
 
 	mIdentity(&modelMatrix);
@@ -345,16 +340,24 @@ static void specialKeyReleased(int code, int x, int y)
 	motion = NONE;
 }
 
+static void mouseMove(int x, int y)
+{
+	printf("%d\t%d\n", x, y);
+	glutPostRedisplay();
+}
+
 int main(int argc, char **argv)
 {
 	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(1280, 720);
-	glutInitWindowPosition(100, 100);
 	glutTimerFunc(50, timerFunc, 1);
 
 	glutCreateWindow("Sphere");
+	glutFullScreen();
+	glutSetCursor(GLUT_CURSOR_CROSSHAIR);
+	glutPassiveMotionFunc(mouseMove);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(exitFunc);
 	glutSpecialFunc(specialKeyPressed);
