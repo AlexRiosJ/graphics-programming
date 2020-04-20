@@ -12,9 +12,9 @@
 #endif
 #define toRadians(deg) deg *M_PI / 180.0
 
-Sphere sphere;
-Vertex spherePosition = {0, 0, -5};
-Vertex sphereVelocity = {0.05, 0.05, 0.07};
+Sphere spheres[3];
+Vertex spherePosition[3];
+Vertex sphereVelocity[3];
 static const float SPHERE_RADIUS = 0.5;
 
 Cylinder cylinder;
@@ -195,8 +195,8 @@ static void move()
 	float nextForwardYPosition = cameraSpeed * sin(toRadians(movey * 0.08));
 	float nextForwardZPosition = cameraSpeed * cos(toRadians(movex * 0.08));
 
-	float nextSideXPosition = cameraSpeed * cos(toRadians(-movex * 0.08));
-	float nextSideZPosition = cameraSpeed * -sin(toRadians(-movex * 0.08));
+	float nextSideXPosition = cameraSpeed * -cos(toRadians(movex * 0.08));
+	float nextSideZPosition = cameraSpeed * -sin(toRadians(movex * 0.08));
 
 	if (keys['w'])
 	{
@@ -220,17 +220,17 @@ static void move()
 	}
 	if (keys['a'])
 	{
-		if (cameraPosition.x - nextSideXPosition > w1 && cameraPosition.x - nextSideXPosition < w2)
-			cameraPosition.x -= nextSideXPosition;
-		if (cameraPosition.z - nextSideZPosition > d1 && cameraPosition.z - nextSideZPosition < d2)
-			cameraPosition.z -= nextSideZPosition;
-	}
-	if (keys['d'])
-	{
 		if (cameraPosition.x + nextSideXPosition > w1 && cameraPosition.x + nextSideXPosition < w2)
 			cameraPosition.x += nextSideXPosition;
 		if (cameraPosition.z + nextSideZPosition > d1 && cameraPosition.z + nextSideZPosition < d2)
 			cameraPosition.z += nextSideZPosition;
+	}
+	if (keys['d'])
+	{
+		if (cameraPosition.x - nextSideXPosition > w1 && cameraPosition.x - nextSideXPosition < w2)
+			cameraPosition.x -= nextSideXPosition;
+		if (cameraPosition.z - nextSideZPosition > d1 && cameraPosition.z - nextSideZPosition < d2)
+			cameraPosition.z -= nextSideZPosition;
 	}
 }
 
@@ -255,11 +255,6 @@ static void display()
 	glBindVertexArray(roomVA);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	translate(&modelMatrix, spherePosition.x, -ROOM_HEIGHT / 2 + 0.01, spherePosition.z);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
-	glBindVertexArray(shadowVA);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 41);
-
 	static float angle = -45;
 
 	mIdentity(&modelMatrix);
@@ -273,40 +268,37 @@ static void display()
 	if (angle >= 360.0)
 		angle -= 360.0;
 
-	mIdentity(&modelMatrix);
-	translate(&modelMatrix, spherePosition.x, spherePosition.y, spherePosition.z);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
-	sphere_draw(sphere);
+	for (int i = 0; i < 3; i++)
+	{
+		mIdentity(&modelMatrix);
+		translate(&modelMatrix, spherePosition[i].x, -ROOM_HEIGHT / 2 + 0.01, spherePosition[i].z);
+		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+		glBindVertexArray(shadowVA);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 41);
 
-	spherePosition.x += sphereVelocity.x;
-	spherePosition.y += sphereVelocity.y;
-	spherePosition.z += sphereVelocity.z;
+		mIdentity(&modelMatrix);
+		translate(&modelMatrix, spherePosition[i].x, spherePosition[i].y, spherePosition[i].z);
+		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+		sphere_draw(spheres[i]);
 
-	if (spherePosition.x + SPHERE_RADIUS >= ROOM_WIDTH / 2)
-	{
-		sphereVelocity.x *= -1;
-	}
-	else if (spherePosition.x - SPHERE_RADIUS <= -ROOM_WIDTH / 2)
-	{
-		sphereVelocity.x *= -1;
-	}
+		spherePosition[i].x += sphereVelocity[i].x;
+		spherePosition[i].y += sphereVelocity[i].y;
+		spherePosition[i].z += sphereVelocity[i].z;
 
-	if (spherePosition.y + SPHERE_RADIUS >= ROOM_HEIGHT / 2)
-	{
-		sphereVelocity.y *= -1;
-	}
-	else if (spherePosition.y - SPHERE_RADIUS <= -ROOM_HEIGHT / 2)
-	{
-		sphereVelocity.y *= -1;
-	}
+		if (spherePosition[i].x + SPHERE_RADIUS >= ROOM_WIDTH / 2 || spherePosition[i].x - SPHERE_RADIUS <= -ROOM_WIDTH / 2)
+		{
+			sphereVelocity[i].x *= -1;
+		}
 
-	if (spherePosition.z + SPHERE_RADIUS >= ROOM_DEPTH / 2)
-	{
-		sphereVelocity.z *= -1;
-	}
-	else if (spherePosition.z - SPHERE_RADIUS <= -ROOM_DEPTH / 2)
-	{
-		sphereVelocity.z *= -1;
+		if (spherePosition[i].y + SPHERE_RADIUS >= ROOM_HEIGHT / 2 || spherePosition[i].y - SPHERE_RADIUS <= -ROOM_HEIGHT / 2)
+		{
+			sphereVelocity[i].y *= -1;
+		}
+
+		if (spherePosition[i].z + SPHERE_RADIUS >= ROOM_DEPTH / 2 || spherePosition[i].z - SPHERE_RADIUS <= -ROOM_DEPTH / 2)
+		{
+			sphereVelocity[i].z *= -1;
+		}
 	}
 
 	glutSwapBuffers();
@@ -371,9 +363,18 @@ int main(int argc, char **argv)
 	glewInit();
 	initShaders();
 
-	Vertex sphereColor1 = {0.8, 0.3, 0.8};
-	sphere = sphere_create(SPHERE_RADIUS, 40, 40, sphereColor1);
-	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+	for (int i = 0; i < 3; i++)
+	{
+		Vertex sphereColor = {i % 3, (i + 1) % 3, (i + 2) % 3};
+		spheres[i] = sphere_create(SPHERE_RADIUS, 40, 40, sphereColor);
+		sphere_bind(spheres[i], vertexPosLoc, vertexColLoc, vertexNormalLoc);
+		spherePosition[i].x = 0;
+		spherePosition[i].y = 0;
+		spherePosition[i].z = 0;
+		sphereVelocity[i].x = (i + 1) * 0.03;
+		sphereVelocity[i].y = (i + 1) * 0.03;
+		sphereVelocity[i].z = (i + 1) * 0.03;
+	}
 
 	Vertex cylinderBottomColor = {1, 0, 0};
 	Vertex cylinderTopColor = {0, 0, 1};
