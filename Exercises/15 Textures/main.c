@@ -26,7 +26,7 @@ static GLuint programId2, vertexPositionLoc2, modelColorLoc2, modelMatrixLoc2, p
 static GLuint ambientLightLoc, materialALoc, materialDLoc;
 static GLuint materialSLoc, cameraPositionLoc;
 
-GLuint cubeVA, roomVA, rhombusVA, rhombusBuffer[3];
+GLuint cubeVA, roomVA, rhombusVA, rhombusBuffer[4];
 GLuint roomBuffers[3];
 
 static MOTION_TYPE motionType = 0;
@@ -197,10 +197,10 @@ static void initRoom()
 	float dw = (float)ROOM_DEPTH / ROOM_WIDTH;
 
 	float texcoords[] = {0, 2, 0, 0, 2 * wh, 0, 2 * wh, 0, 2 * wh, 2, 0, 2,
-						 0, 2, 0, 0, 2 * wh, 0, 2 * wh, 0, 2 * wh, 2, 0, 2,
+						 2 * wh, 2, 2 * wh, 0, 0, 0, 0, 0, 0, 2, 2 * wh, 2,
 						 0, 2, 0, 0, 2 * dh, 0, 2 * dh, 0, 2 * dh, 2, 0, 2,
-						 0, 2, 0, 0, 2 * dh, 0, 2 * dh, 0, 2 * dh, 2, 0, 2,
-						 0, 2 * dw, 0, 0, 2, 0, 2, 0, 2, 2 * dw, 0, 2 * dw,
+						 2 * dh, 2, 2 * dh, 0, 0, 0, 0, 0, 0, 2, 2 * dh, 2,
+						 0, 0, 0, 2 * dw, 2, 2 * dw, 2, 2 * dw, 2, 0, 0, 0,
 						 0, 2 * dw, 0, 0, 2, 0, 2, 0, 2, 2 * dw, 0, 2 * dw};
 
 	glUseProgram(programId1);
@@ -237,7 +237,8 @@ static void crossProduct(vec3 p1, vec3 p2, vec3 p3, vec3 res)
 static void initRhombus()
 {
 	float positions[] = {0.0, 1.0, 0.6, -0.7, 0.0, 0.0, 0.7, 0.0, 0.0, 0.0, -1.0, 0.6};
-	float normals[12] = {};
+	float normals[12];
+	float texcoords[] = {0.7, 2.0, 0.0, 1.0, 1.4, 1.0, 0.7, 0.0};
 	GLuint indexes[] = {0, 1, 2, 1, 3, 2};
 
 	crossProduct(positions, positions + 3, positions + 6, normals);
@@ -252,7 +253,7 @@ static void initRhombus()
 	glUseProgram(programId1);
 	glGenVertexArrays(1, &rhombusVA);
 	glBindVertexArray(rhombusVA);
-	glGenBuffers(3, rhombusBuffer);
+	glGenBuffers(4, rhombusBuffer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, rhombusBuffer[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
@@ -264,7 +265,12 @@ static void initRhombus()
 	glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, 0, 0, 0);
 	glEnableVertexAttribArray(vertexNormalLoc);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rhombusBuffer[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, rhombusBuffer[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexTexcoordLoc, 2 , GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexTexcoordLoc);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rhombusBuffer[3]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
 }
 
@@ -360,12 +366,13 @@ static void displayFunc()
 	glDrawArrays(GL_TRIANGLES, 24, 6);
 	glBindTexture(GL_TEXTURE_2D, textures[1]);
 	glDrawArrays(GL_TRIANGLES, 30, 6);
+	glBindTexture(GL_TEXTURE_2D, textures[3]);
 
 	//	Dibujar el rombo frontal
 	translate(&modelMatrix, 2, 1, -5);
 	glUniformMatrix4fv(modelMatrixLoc, 1, true, modelMatrix.values);
 	glBindVertexArray(rhombusVA);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rhombusBuffer[2]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rhombusBuffer[3]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//	Dibujar el rombo derecho
@@ -374,7 +381,7 @@ static void displayFunc()
 	rotateY(&modelMatrix, -90);
 	glUniformMatrix4fv(modelMatrixLoc, 1, true, modelMatrix.values);
 	glBindVertexArray(rhombusVA);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rhombusBuffer[2]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rhombusBuffer[3]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//	Env�o de proyecci�n y vista al programa 2
