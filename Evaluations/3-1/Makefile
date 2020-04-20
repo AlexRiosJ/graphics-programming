@@ -3,6 +3,7 @@ UTILS=utils
 TRANS=transforms
 MAT4=mat4
 SHPERE=sphere
+CYLINDER=cylinder
 IDIR=..\..\Utils
 CC=gcc
 CFLAGS=-I$(IDIR)
@@ -15,7 +16,7 @@ LIBS=-lglew32 -lfreeglut -lopengl32
 _DEPS = $(UTILS).h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_UOBJ = $(UTILS).o $(TRANS).o $(MAT4).o $(SHPERE).o
+_UOBJ = $(UTILS).o $(TRANS).o $(MAT4).o $(SHPERE).o $(CYLINDER).o
 UOBJ = $(patsubst %,$(ODIR)/%,$(_UOBJ))
 
 _OBJ = $(MAIN).o 

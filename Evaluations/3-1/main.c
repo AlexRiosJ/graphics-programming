@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "transforms.h"
 #include "sphere.h"
+#include "cylinder.h"
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
@@ -20,6 +21,7 @@ typedef enum
 } Motion;
 
 Sphere sphere;
+Cylinder cylinder;
 
 static Mat4 projectionMatrix, modelMatrix, viewMatrix;
 static GLuint programId, vertexPosLoc, vertexColLoc, vertexNormalLoc, modelMatrixLoc, viewMatrixLoc, projMatrixLoc;
@@ -37,7 +39,7 @@ static float rotationSpeed = 2;
 static float ambientLight[] = {1, 1, 1};
 static float materialA[] = {0.5, 0.5, 0.5};
 static float diffuseLight[] = {1, 1, 1};
-static float lightPosition[] = {0, 0, 5};
+static float lightPosition[] = {0, 0, 10};
 static float materialD[] = {0.5, 0.5, 0.5};
 static float materialS[] = {0.5, 0.5, 0.5};
 static float exponent = 16;
@@ -146,6 +148,14 @@ static void display()
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 	sphere_draw(sphere);
 
+	mIdentity(&modelMatrix);
+	rotateY(&modelMatrix, angle);
+	translate(&modelMatrix, 10, 0, 0);
+	rotateX(&modelMatrix, angle);
+	rotateZ(&modelMatrix, angle);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+	cylinder_draw(cylinder);
+
 	angle += 1;
 	if (angle >= 360.0)
 		angle -= 360.0;
@@ -207,7 +217,7 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(100, 100);
 	glutTimerFunc(50, timerFunc, 1);
 
-	glutCreateWindow("Sphere");
+	glutCreateWindow("Sphere and Cylinder");
 	glutDisplayFunc(display);
 	glutKeyboardFunc(exitFunc);
 	glutSpecialFunc(specialKeyPressed);
@@ -219,6 +229,11 @@ int main(int argc, char **argv)
 	Vertex sphereColor1 = {0.8, 0.3, 0.8};
 	sphere = sphere_create(1.5, 40, 40, sphereColor1);
 	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+
+	Vertex cylinderBottomColor = {1, 0, 0};
+	Vertex cylinderTopColor = {0, 0, 1};
+	cylinder = cylinder_create(6, 0.5, 1.5, 30, 30, cylinderBottomColor, cylinderTopColor);
+	cylinder_bind(cylinder, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
 	glClearColor(0, 0, 0, 1.0);
 	glutMainLoop();
