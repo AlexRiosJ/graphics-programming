@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "transforms.h"
 #include "sphere.h"
+#include "cylinder.h"
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
@@ -12,9 +13,11 @@
 #define toRadians(deg) deg *M_PI / 180.0
 
 Sphere sphere;
-Vertex spherePosition = {0, 0, 0};
+Vertex spherePosition = {0, 0, -5};
 Vertex sphereVelocity = {0.05, 0.05, 0.07};
 static const float SPHERE_RADIUS = 0.5;
+
+Cylinder cylinder;
 
 Vertex cameraPosition = {0, 0, 0};
 float cameraSpeed = 0.05;
@@ -257,6 +260,19 @@ static void display()
 	glBindVertexArray(shadowVA);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 41);
 
+	static float angle = -45;
+
+	mIdentity(&modelMatrix);
+	translate(&modelMatrix, 0, 0, -5);
+	rotateX(&modelMatrix, angle);
+	rotateZ(&modelMatrix, angle);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
+	cylinder_draw(cylinder);
+
+	angle += 1;
+	if (angle >= 360.0)
+		angle -= 360.0;
+
 	mIdentity(&modelMatrix);
 	translate(&modelMatrix, spherePosition.x, spherePosition.y, spherePosition.z);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
@@ -358,6 +374,11 @@ int main(int argc, char **argv)
 	Vertex sphereColor1 = {0.8, 0.3, 0.8};
 	sphere = sphere_create(SPHERE_RADIUS, 40, 40, sphereColor1);
 	sphere_bind(sphere, vertexPosLoc, vertexColLoc, vertexNormalLoc);
+
+	Vertex cylinderBottomColor = {1, 0, 0};
+	Vertex cylinderTopColor = {0, 0, 1};
+	cylinder = cylinder_create(2, 0.2, 0.4, 50, 50, cylinderBottomColor, cylinderTopColor);
+	cylinder_bind(cylinder, vertexPosLoc, vertexColLoc, vertexNormalLoc);
 
 	initRoom();
 	initShadow();
