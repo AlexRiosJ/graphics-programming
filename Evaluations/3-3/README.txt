@@ -21,6 +21,7 @@ Le dejo los siguientes archivos:
 main.c
 cylinder.c
 cylinder.h
+README.txt
 utils/
     sphere.c
     sphere.h
