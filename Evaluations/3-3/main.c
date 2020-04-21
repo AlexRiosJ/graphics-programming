@@ -281,23 +281,26 @@ static void display()
 		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, modelMatrix.values);
 		sphere_draw(spheres[i]);
 
-		spherePosition[i].x += sphereVelocity[i].x;
-		spherePosition[i].y += sphereVelocity[i].y;
-		spherePosition[i].z += sphereVelocity[i].z;
-
-		if (spherePosition[i].x + SPHERE_RADIUS >= ROOM_WIDTH / 2 || spherePosition[i].x - SPHERE_RADIUS <= -ROOM_WIDTH / 2)
+		if (keys[13]) // Movimiento pausado por defecto (pulsar ENTER para reanudar)
 		{
-			sphereVelocity[i].x *= -1;
-		}
+			spherePosition[i].x += sphereVelocity[i].x;
+			spherePosition[i].y += sphereVelocity[i].y;
+			spherePosition[i].z += sphereVelocity[i].z;
 
-		if (spherePosition[i].y + SPHERE_RADIUS >= ROOM_HEIGHT / 2 || spherePosition[i].y - SPHERE_RADIUS <= -ROOM_HEIGHT / 2)
-		{
-			sphereVelocity[i].y *= -1;
-		}
+			if (spherePosition[i].x + SPHERE_RADIUS >= ROOM_WIDTH / 2 || spherePosition[i].x - SPHERE_RADIUS <= -ROOM_WIDTH / 2)
+			{
+				sphereVelocity[i].x *= -1;
+			}
 
-		if (spherePosition[i].z + SPHERE_RADIUS >= ROOM_DEPTH / 2 || spherePosition[i].z - SPHERE_RADIUS <= -ROOM_DEPTH / 2)
-		{
-			sphereVelocity[i].z *= -1;
+			if (spherePosition[i].y + SPHERE_RADIUS >= ROOM_HEIGHT / 2 || spherePosition[i].y - SPHERE_RADIUS <= -ROOM_HEIGHT / 2)
+			{
+				sphereVelocity[i].y *= -1;
+			}
+
+			if (spherePosition[i].z + SPHERE_RADIUS >= ROOM_DEPTH / 2 || spherePosition[i].z - SPHERE_RADIUS <= -ROOM_DEPTH / 2)
+			{
+				sphereVelocity[i].z *= -1;
+			}
 		}
 	}
 
@@ -323,12 +326,16 @@ static void keyPressed(unsigned char key, int x, int y)
 {
 	if (key == 27)
 		exit(0);
-	keys[key] = 1;
+	if (key == 13)					 // Enter
+		keys[13] = keys[13] ? 0 : 1; // Cambiar entre 1 y 0 cada vez que se pulsa
+	else
+		keys[key] = 1;
 }
 
 static void keyReleased(unsigned char key, int x, int y)
 {
-	keys[key] = 0;
+	if (key != 13)
+		keys[key] = 0;
 }
 
 void rotateCamera(int x, int y)
