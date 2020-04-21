@@ -8,7 +8,6 @@ uniform mat4 viewMatrix;
 out vec2 texcoordVF;
 
 void main() {
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * 
-                vec4(position, 1);
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1);
   texcoordVF = texcoord;
 }

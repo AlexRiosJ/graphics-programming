@@ -1,8 +1,7 @@
-
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "Transforms.h"
-#include "Utils.h"
+#include "transforms.h"
+#include "utils.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -24,7 +23,7 @@ typedef float vec3[3];
 static Mat4 modelMatrix, projectionMatrix, viewMatrix;
 static GLuint programId1, positionLoc1, texcoordLoc1, modelMatrixLoc1, projectionMatrixLoc1, viewMatrixLoc1;
 static GLuint programId2, positionLoc2, texcoordLoc2, timeLoc2, windowSizeLoc2;
-static GLuint programId3;
+static GLuint programId3, positionLoc3, texcoordLoc3, modelMatrixLoc3, projectionMatrixLoc3, viewMatrixLoc3;;
 
 static GLuint roomVA, starVA, waterVA, boxVA;
 static GLuint roomBuffers[3];
@@ -85,6 +84,11 @@ static void initShaders()
 	glAttachShader(programId3, vShader1);
 	glAttachShader(programId3, fShader3);
 	glLinkProgram(programId3);
+	positionLoc3 = glGetAttribLocation(programId3, "position");
+	texcoordLoc3 = glGetAttribLocation(programId3, "texcoord");
+	modelMatrixLoc3 = glGetUniformLocation(programId3, "modelMatrix");
+	viewMatrixLoc3 = glGetUniformLocation(programId3, "viewMatrix");
+	projectionMatrixLoc3 = glGetUniformLocation(programId3, "projectionMatrix");
 }
 
 static GLuint textures[4];
@@ -96,16 +100,16 @@ static void initTexture(const char *filename, GLuint textureId)
 	glBindTexture(GL_TEXTURE_2D, textureId);
 	loadBMP(filename, &data, &width, &height);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-	//	glGenerateMipmap(GL_TEXTURE_2D);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 8);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
 static void initTextures()
@@ -287,51 +291,52 @@ static void displayFunc()
 	glDrawArrays(GL_TRIANGLES, 0, 30);
 
 	//	Dibujar la estrella
-	//	mIdentity(&modelMatrix);
-	//	translate(&modelMatrix, 3, 1, -14);
-	//	static float starAngle = 0, incAngle = 0.5;
-	//	rotateZ(&modelMatrix, starAngle);
-	//	starAngle += incAngle;
-	//	if(starAngle >= 45 || starAngle <= -45) incAngle *= -1;
-	//	scale(&modelMatrix, 0.8, 0.8, 1);
-	//	glUniformMatrix4fv(modelMatrixLoc1, 1, true, modelMatrix.values);
-	//	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	//	glBindVertexArray(starVA);
-	//	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	mIdentity(&modelMatrix);
+	translate(&modelMatrix, 3, 1, -14);
+	static float starAngle = 0, incAngle = 0.5;
+	rotateZ(&modelMatrix, starAngle);
+	starAngle += incAngle;
+	if (starAngle >= 45 || starAngle <= -45)
+		incAngle *= -1;
+	scale(&modelMatrix, 0.8, 0.8, 1);
+	glUniformMatrix4fv(modelMatrixLoc1, 1, true, modelMatrix.values);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
+	glBindVertexArray(starVA);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	//	Dibujar la caja
-	//	glUseProgram(programId3);
-	//	glUniformMatrix4fv(projectionMatrixLoc1, 1, true, projectionMatrix.values);
-	//	mIdentity(&viewMatrix);
-	//	rotateY(&viewMatrix, -cameraAngle);
-	//	translate(&viewMatrix, -cameraX, 0, -cameraZ);
-	//	glUniformMatrix4fv(viewMatrixLoc1, 1, true, viewMatrix.values);
-	//	mIdentity(&modelMatrix);
-	//	translate(&modelMatrix, -3, 0, -10);
-	//	static float boxAngle = 0;
-	//	rotateY(&modelMatrix, boxAngle += 0.5);
-	//	rotateZ(&modelMatrix, boxAngle);
-	//	glUniformMatrix4fv(modelMatrixLoc1, 1, true, modelMatrix.values);
-	//	glBindVertexArray(boxVA);
-	//	glDrawElements(GL_TRIANGLE_STRIP, 19, GL_UNSIGNED_SHORT, 0);
+	glUseProgram(programId3);
+	glUniformMatrix4fv(projectionMatrixLoc3, 1, true, projectionMatrix.values);
+	mIdentity(&viewMatrix);
+	rotateY(&viewMatrix, -cameraAngle);
+	translate(&viewMatrix, -cameraX, 0, -cameraZ);
+	glUniformMatrix4fv(viewMatrixLoc3, 1, true, viewMatrix.values);
+	mIdentity(&modelMatrix);
+	translate(&modelMatrix, -3, 0, -10);
+	static float boxAngle = 0;
+	rotateY(&modelMatrix, boxAngle += 0.5);
+	rotateZ(&modelMatrix, boxAngle);
+	glUniformMatrix4fv(modelMatrixLoc3, 1, true, modelMatrix.values);
+	glBindVertexArray(boxVA);
+	glDrawElements(GL_TRIANGLE_STRIP, 19, GL_UNSIGNED_SHORT, 0);
 
-	//	Dibujar el agua
-	//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//	glEnable(GL_BLEND);
-	//	glUseProgram(programId2);
-	//
-	//	glActiveTexture(GL_TEXTURE0);
-	//	glUniform1i(glGetUniformLocation(programId2, "texture0"), 0);
-	//	glBindTexture(GL_TEXTURE_2D, textures[2]);
-	//
-	//	glActiveTexture(GL_TEXTURE1);
-	//	glUniform1i(glGetUniformLocation(programId2, "texture1"), 1);
-	//	glBindTexture(GL_TEXTURE_2D, textures[3]);
-	//
-	//	glBindVertexArray(waterVA);
-	//	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//	glDisable(GL_BLEND);
-	//	glActiveTexture(GL_TEXTURE0);
+	// Dibujar el agua
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glUseProgram(programId2);
+
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(programId2, "texture0"), 0);
+	glBindTexture(GL_TEXTURE_2D, textures[2]);
+
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(glGetUniformLocation(programId2, "texture1"), 1);
+	glBindTexture(GL_TEXTURE_2D, textures[3]);
+
+	glBindVertexArray(waterVA);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDisable(GL_BLEND);
+	glActiveTexture(GL_TEXTURE0);
 
 	glutSwapBuffers();
 }
