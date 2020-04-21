@@ -19,10 +19,10 @@ Se puede pulsar ENTER en cualquier momento para detener / reanudar su movimiento
 Le dejo los siguientes archivos:
 /
 main.c
-cylinder.c
-cylinder.h
 README.txt
 utils/
+    cylinder.c
+    cylinder.h
     sphere.c
     sphere.h
     utils.c
