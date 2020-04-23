@@ -46,8 +46,38 @@ Box boxArray[BOX_COUNT];
 
 static bool intersectRayBox(Vec3 ray_origin, Vec3 ray_direction, Box box)
 {
-	// ************************
-	// AQU� EST� EL TRABAJO PESADO
+	float x1 = box.position.x - box.dimensions.x / 2;
+	float x2 = box.position.x + box.dimensions.x / 2;
+	float y1 = box.position.y - box.dimensions.y / 2;
+	float y2 = box.position.y + box.dimensions.y / 2;
+	float z1 = box.position.z - box.dimensions.z / 2;
+	float z2 = box.position.z + box.dimensions.z / 2;
+
+	float tx1 = (x1 - ray_origin.x) / ray_direction.x;
+	float tx2 = (x2 - ray_origin.x) / ray_direction.x;
+	float ty1 = (y1 - ray_origin.y) / ray_direction.y;
+	float ty2 = (y2 - ray_origin.y) / ray_direction.y;
+	float tz1 = (z1 - ray_origin.z) / ray_direction.z;
+	float tz2 = (z2 - ray_origin.z) / ray_direction.z;
+
+	float maxTx = max(tx1, tx2);
+	float maxTy = max(ty1, ty2);
+	if (maxTx < 0 || maxTy < 0)
+		return false;
+
+	float minTx = min(tx1, tx2);
+	float minTy = min(ty1, ty2);
+	if (maxTx < minTy || maxTy < minTx)
+		return false;
+
+	float maxTz = max(tz1, tz2);
+	if (maxTz < 0)
+		return false;
+
+	float minTz = min(tz1, tz2);
+	if (maxTz < max(minTx, minTy) || minTz > min(maxTx, maxTy))
+		return false;
+
 	return true;
 }
 
@@ -55,16 +85,54 @@ static void mouseFunc(int button, int state, int mx, int my)
 {
 	if (state != GLUT_UP)
 		return;
-
-	// ************************
-	// AQU� EST� EL TRABAJO M�S PESADO
-
 	// Obtener coordenadas de dispositivo normalizado
+	float nx = 2.0 * mx / glutGet(GLUT_WINDOW_WIDTH) - 1;
+	float ny = (2.0 * my / glutGet(GLUT_WINDOW_HEIGHT) - 1) * -1;
+	// printf("N: %.2f, %.2f\n", nx, ny);
 
 	// Desproyectar
+	Vec4 rayN = {nx, ny, -1, 1};
+	Mat4 invProjectionMatrix;
+	inverse(projectionMatrix, &invProjectionMatrix);
+	Vec4 rayV;
+	multiply(invProjectionMatrix, rayN, &rayV);
+	// printf("V: %.2f, %.2f\n", rayV.x, rayV.y);
+
+	rayV.z = -1;
+	rayV.w = 0;
+	Mat4 invViewMatrix;
+	inverse(viewMatrix, &invViewMatrix);
+	Vec4 rayM;
+	multiply(invViewMatrix, rayV, &rayM);
+	// printf("M: %.2f, %.2f, %.2f\n", rayM.x, rayM.y, rayM.z);
 
 	// Obtener la caja m�s cercana con quien hubo colisi�n
+	Vec3 rayOrigin = {cameraX, cameraY, cameraZ};
+	Vec3 rayDirection = {rayM.x, rayM.y, rayM.z};
+
 	int min_index = -1;
+	float minDistance = 0;
+
+	for (int i = 0; i < BOX_COUNT; i++)
+	{
+		Box box = boxArray[i];
+		if (box.shot)
+			continue;
+		if (!intersectRayBox(rayOrigin, rayDirection, box))
+			continue;
+
+		Vec3 originToBox = {box.position.x - rayOrigin.x,
+							box.position.y - rayOrigin.y,
+							box.position.z - rayOrigin.z};
+
+		float d = vec3_magnitude(&originToBox);
+
+		if (min_index < 0 || d < minDistance)
+		{
+			minDistance = d;
+			min_index = i;
+		}
+	}
 
 	if (min_index >= 0)
 	{

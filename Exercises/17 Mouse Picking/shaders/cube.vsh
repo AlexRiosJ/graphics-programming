@@ -15,7 +15,7 @@ void main() {
 	vec3 unitNormal  = normalize(modelNormal.xyz);
 	vec3 lightPosition = vec3(0, 0, 1);
 	vec3 lightDirection = -normalize(worldPosition3 - lightPosition);
-	float factorD = clamp(dot(unitNormal, lightDirection), 0, 1);
+	float factorD = clamp(dot(unitNormal, lightDirection), 0.0, 1.0);
 	vec3 ambientColor = materialColor / 3;
-	colorToFS = clamp(ambientColor + materialColor * factorD, 0, 1);
+	colorToFS = clamp(ambientColor + materialColor * factorD, 0.0, 1.0);
 }
