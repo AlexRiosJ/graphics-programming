@@ -149,9 +149,13 @@ static void initShaders()
 	GLuint fShader = compileShader("shaders/cube.fsh", GL_FRAGMENT_SHADER);
 	if (!shaderCompiled(fShader))
 		return;
+	GLuint gShader = compileShader("shaders/cube.gsh", GL_GEOMETRY_SHADER);
+	if (!shaderCompiled(gShader))
+		return;
 	programId = glCreateProgram();
 	glAttachShader(programId, vShader);
 	glAttachShader(programId, fShader);
+	glAttachShader(programId, gShader);
 	glLinkProgram(programId);
 	vertexPositionLoc = glGetAttribLocation(programId, "vertexPosition");
 	vertexNormalLoc = glGetAttribLocation(programId, "vertexNormal");
@@ -339,8 +343,11 @@ static void displayFunc()
 		glUniformMatrix4fv(modelMatrixLoc, 1, true, modelMatrix.values);
 		glUniform3f(materialColorLoc, boxArray[i].color.x, boxArray[i].color.y, boxArray[i].color.z);
 		glBindVertexArray(cubeVA);
-		if (boxArray[i].shot)
-			continue;
+		// if (boxArray[i].shot)
+		// 	continue;
+
+		glUniform1i(glGetUniformLocation(programId, "shot"), boxArray[i].shot);
+
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 
